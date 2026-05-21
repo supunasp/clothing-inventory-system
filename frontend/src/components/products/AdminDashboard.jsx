@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 const products = [
@@ -55,6 +56,7 @@ const StatCard = ({ icon, title, value }) => {
 
 const AdminDashboard = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
 
     const fullName =
         [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Admin User";
@@ -152,7 +154,11 @@ const AdminDashboard = () => {
                 <section className="rounded-xl border border-gray-100 bg-white shadow-sm">
                     <div className="flex items-center justify-between px-5 py-4">
                         <h2 className="text-sm font-medium text-gray-900">Category</h2>
-                        <button className="rounded-md bg-emerald-600 px-4 py-2 text-xs font-medium text-white hover:bg-emerald-700">
+                        <button
+                            type="button"
+                            onClick={() => navigate("/admin/categories")}
+                            className="rounded-md bg-emerald-600 px-4 py-2 text-xs font-medium text-white hover:bg-emerald-700"
+                        >
                             + Add Category
                         </button>
                     </div>

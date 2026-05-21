@@ -3,7 +3,7 @@ import SideMenu from "./SideMenu";
 
 const AppLayout = ({ children }) => {
     return (
-        <div className="min-h-screen bg-[#f8f8f8] text-gray-900">
+        <div className="min-h-screen bg-[var(--app-background)] text-[var(--app-text-primary)]">
             <SideMenu />
 
             <main className="ml-60 min-h-screen">

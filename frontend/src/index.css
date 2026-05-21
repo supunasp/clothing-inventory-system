@@ -2,13 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer components {
-    .all-\[unset\] {
-        all: unset;
-    }
-}
-
 :root {
+    --app-background: #f8f8f8;
+    --app-surface: #ffffff;
+    --app-border: #e5e7eb;
+    --app-text-primary: #111827;
+    --app-text-secondary: #4b5563;
+    --app-primary: #009f6d;
+    --app-primary-hover: #008f62;
+
     --base-white: rgba(255, 255, 255, 1);
     --colors-accents-blue: rgba(0, 136, 255, 1);
     --colors-accents-red: rgba(255, 56, 60, 1);
@@ -58,155 +60,42 @@
     --white: rgba(255, 255, 255, 1);
 }
 
-/*
+@layer components {
+    .all-\[unset\] {
+        all: unset;
+    }
 
-To enable a theme in your HTML, simply add one of the following data attributes to an HTML element, like so:
+    .bg-app {
+        background-color: var(--app-background);
+    }
 
-<body data-tokens-mode="light-mode">
-    <!-- the rest of your content -->
-</body>
+    .bg-sidebar {
+        background-color: var(--app-sidebar-background);
+    }
 
-You can apply the theme on any DOM node, not just the `body`
+    .bg-sidebar-active {
+        background-color: var(--app-sidebar-active-background);
+    }
 
-*/
+    .border-app {
+        border-color: var(--app-border);
+    }
 
-[data-tokens-mode="light-mode"] {
-    --tokens-background-bg-secondary: var(--foundations-general-white);
-    --tokens-border-border-primary: var(--foundations-grayscale-200);
-    --tokens-text-primary: var(--foundations-grayscale-900);
-    --tokens-text-secondary: var(--foundations-grayscale-600);
-}
+    .text-app-primary {
+        color: var(--app-text-primary);
+    }
 
-[data-tokens-mode="dark-mode"] {
-    --tokens-background-bg-secondary: var(--foundations-grayscale-800);
-    --tokens-border-border-primary: var(--foundations-grayscale-700);
-    --tokens-text-primary: var(--foundations-grayscale-0);
-    --tokens-text-secondary: var(--foundations-grayscale-400);
-}
+    .text-app-secondary {
+        color: var(--app-text-secondary);
+    }
 
-[data-colors-mode="light"] {
-    --colors-accents-blue: rgba(0, 136, 255, 1);
-    --colors-accents-red: rgba(255, 56, 60, 1);
-}
+    .bg-app-primary {
+        background-color: var(--app-primary);
+    }
 
-[data-colors-mode="dark"] {
-    --colors-accents-blue: rgba(0, 145, 255, 1);
-    --colors-accents-red: rgba(255, 66, 69, 1);
-}
-
-[data-colors-mode="IC-light"] {
-    --colors-accents-blue: rgba(30, 110, 244, 1);
-    --colors-accents-red: rgba(233, 21, 45, 1);
-}
-
-[data-colors-mode="IC-dark"] {
-    --colors-accents-blue: rgba(92, 184, 255, 1);
-    --colors-accents-red: rgba(255, 97, 101, 1);
-}
-
-:root {
-    --animate-spin: spin 1s linear infinite;
-}
-
-.animate-fade-in {
-    animation: fade-in 1s var(--animation-delay, 0s) ease forwards;
-}
-
-.animate-fade-up {
-    animation: fade-up 1s var(--animation-delay, 0s) ease forwards;
-}
-
-.animate-marquee {
-    animation: marquee var(--duration) infinite linear;
-}
-
-.animate-marquee-vertical {
-    animation: marquee-vertical var(--duration) linear infinite;
-}
-
-.animate-shimmer {
-    animation: shimmer 8s infinite;
-}
-
-.animate-spin {
-    animation: var(--animate-spin);
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(1turn);
+    .bg-app-primary-hover:hover {
+        background-color: var(--app-primary-hover);
     }
 }
 
-@keyframes image-glow {
-    0% {
-        opacity: 0;
-        animation-timing-function: cubic-bezier(0.74, 0.25, 0.76, 1);
-    }
-
-    10% {
-        opacity: 0.7;
-        animation-timing-function: cubic-bezier(0.12, 0.01, 0.08, 0.99);
-    }
-
-    to {
-        opacity: 0.4;
-    }
-}
-
-@keyframes fade-in {
-    0% {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: none;
-    }
-}
-
-@keyframes fade-up {
-    0% {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: none;
-    }
-}
-
-@keyframes shimmer {
-    0%,
-    90%,
-    to {
-        background-position: calc(-100% - var(--shimmer-width)) 0;
-    }
-
-    30%,
-    60% {
-        background-position: calc(100% + var(--shimmer-width)) 0;
-    }
-}
-
-@keyframes marquee {
-    0% {
-        transform: translate(0);
-    }
-
-    to {
-        transform: translateX(calc(-100% - var(--gap)));
-    }
-}
-
-@keyframes marquee-vertical {
-    0% {
-        transform: translateY(0);
-    }
-
-    to {
-        transform: translateY(calc(-100% - var(--gap)));
-    }
-}
+/* ... existing code ... */
