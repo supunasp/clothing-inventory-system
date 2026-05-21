@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import ConfirmationModal from "../common/ConfirmationModal";
 
 const products = [
     {
@@ -45,10 +46,105 @@ const products = [
 const ProductDashboard = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const [productList, setProductList] = useState(products);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [inventoryInputs, setInventoryInputs] = useState({});
+    const [inventoryAction, setInventoryAction] = useState(null);
+    const [isUpdatingInventory, setIsUpdatingInventory] = useState(false);
+    const [inventoryError, setInventoryError] = useState("");
 
     const fullName =
         [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Staff User";
+
+    const handleInventoryInputChange = (variantId, field, value) => {
+        setInventoryInputs((currentInputs) => ({
+            ...currentInputs,
+            [variantId]: {
+                ...currentInputs[variantId],
+                [field]: value,
+            },
+        }));
+    };
+
+    const handleOpenInventoryConfirmation = (type, variant) => {
+        setInventoryError("");
+
+        const rowInputs = inventoryInputs[variant.id] || {};
+        const amount = Number(rowInputs.amount);
+        const reference = rowInputs.reference?.trim();
+
+        if (!amount || amount <= 0) {
+            setInventoryError("Please enter a valid inventory amount.");
+            return;
+        }
+
+        if (!reference) {
+            setInventoryError("Please enter a reference before updating inventory.");
+            return;
+        }
+
+        if (type === "decrease" && amount > variant.inventory) {
+            setInventoryError("You cannot remove more inventory than currently available.");
+            return;
+        }
+
+        setInventoryAction({
+            type,
+            variant,
+            amount,
+            reference,
+        });
+    };
+
+    const handleConfirmInventoryUpdate = async () => {
+        if (!inventoryAction || !selectedProduct) {
+            return;
+        }
+
+        setIsUpdatingInventory(true);
+
+        try {
+            const { type, variant, amount } = inventoryAction;
+            const multiplier = type === "increase" ? 1 : -1;
+
+            const updatedProduct = {
+                ...selectedProduct,
+                variants: selectedProduct.variants.map((currentVariant) =>
+                    currentVariant.id === variant.id
+                        ? {
+                            ...currentVariant,
+                            inventory: currentVariant.inventory + amount * multiplier,
+                        }
+                        : currentVariant
+                ),
+            };
+
+            updatedProduct.inventory = updatedProduct.variants.reduce(
+                (total, currentVariant) => total + currentVariant.inventory,
+                0
+            );
+
+            setSelectedProduct(updatedProduct);
+
+            setProductList((currentProducts) =>
+                currentProducts.map((product) =>
+                    product.id === updatedProduct.id ? updatedProduct : product
+                )
+            );
+
+            setInventoryInputs((currentInputs) => ({
+                ...currentInputs,
+                [variant.id]: {
+                    amount: "",
+                    reference: "",
+                },
+            }));
+
+            setInventoryAction(null);
+        } finally {
+            setIsUpdatingInventory(false);
+        }
+    };
 
     return (
         <>
@@ -101,7 +197,7 @@ const ProductDashboard = () => {
                         </thead>
 
                         <tbody>
-                        {products.map((product) => (
+                        {productList.map((product) => (
                             <tr
                                 key={product.id}
                                 className={`border-b border-gray-100 ${
@@ -199,6 +295,15 @@ const ProductDashboard = () => {
                                         <input
                                             type="number"
                                             placeholder="Enter Amount"
+                                            min="1"
+                                            value={inventoryInputs[variant.id]?.amount || ""}
+                                            onChange={(event) =>
+                                                handleInventoryInputChange(
+                                                    variant.id,
+                                                    "amount",
+                                                    event.target.value
+                                                )
+                                            }
                                             className="h-8 w-28 rounded-md border border-gray-200 px-2 text-xs outline-none focus:border-blue-500"
                                         />
                                     </td>
@@ -206,16 +311,34 @@ const ProductDashboard = () => {
                                         <input
                                             type="text"
                                             placeholder="Enter Reference"
+                                            value={inventoryInputs[variant.id]?.reference || ""}
+                                            onChange={(event) =>
+                                                handleInventoryInputChange(
+                                                    variant.id,
+                                                    "reference",
+                                                    event.target.value
+                                                )
+                                            }
                                             className="h-8 w-32 rounded-md border border-gray-200 px-2 text-xs outline-none focus:border-blue-500"
                                         />
                                     </td>
                                     <td className="px-5 py-4">
-                                        <button className="rounded-md bg-red-500 px-4 py-1.5 text-white hover:bg-red-600">
+                                        <button
+                                            onClick={() =>
+                                                handleOpenInventoryConfirmation("decrease", variant)
+                                            }
+                                            className="rounded-md bg-red-500 px-4 py-1.5 text-white hover:bg-red-600"
+                                        >
                                             −
                                         </button>
                                     </td>
                                     <td className="px-5 py-4">
-                                        <button className="rounded-md bg-emerald-600 px-8 py-1.5 text-white hover:bg-emerald-700">
+                                        <button
+                                            onClick={() =>
+                                                handleOpenInventoryConfirmation("increase", variant)
+                                            }
+                                            className="rounded-md bg-emerald-600 px-8 py-1.5 text-white hover:bg-emerald-700"
+                                        >
                                             +
                                         </button>
                                     </td>
@@ -224,8 +347,24 @@ const ProductDashboard = () => {
                             </tbody>
                         </table>
                     </div>
+                    {inventoryError && (
+                        <div className="mt-4 rounded-md bg-red-50 p-4">
+                            <div className="text-sm text-red-800">{inventoryError}</div>
+                        </div>
+                    )}
                 </section>
             )}
+            <ConfirmationModal
+                isOpen={!!inventoryAction}
+                onCancel={() => setInventoryAction(null)}
+                onConfirm={handleConfirmInventoryUpdate}
+                isLoading={isUpdatingInventory}
+            >
+                Are you sure you want to{" "}
+                {inventoryAction?.type === "increase" ? "add" : "remove"}{" "}
+                {inventoryAction?.amount} units from {inventoryAction?.variant.color}{" "}
+                {inventoryAction?.variant.size} variant?
+            </ConfirmationModal>
         </>
     );
 };

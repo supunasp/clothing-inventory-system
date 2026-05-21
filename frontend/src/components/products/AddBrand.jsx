@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ConfirmationModal from "../common/ConfirmationModal";
 
 const AddBrand = () => {
     const navigate = useNavigate();
@@ -8,6 +9,8 @@ const AddBrand = () => {
         brandId: "",
         brandName: "",
     });
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
 
@@ -30,11 +33,29 @@ const AddBrand = () => {
             return;
         }
 
-        setSuccessMessage("Brand saved successfully.");
-        setFormData({
-            brandId: "",
-            brandName: "",
-        });
+        setIsConfirmOpen(true);
+    };
+
+    const handleConfirmSubmit = async () => {
+        setIsSubmitting(true);
+        setErrorMessage("");
+
+        try {
+            // Add brand API call here when backend endpoint is ready.
+            // Example:
+            // await axiosInstance.post("/api/brands", formData);
+
+            setSuccessMessage("Brand saved successfully.");
+            setFormData({
+                brandId: "",
+                brandName: "",
+            });
+            setIsConfirmOpen(false);
+        } catch (error) {
+            setErrorMessage("Unable to create brand.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -115,6 +136,16 @@ const AddBrand = () => {
                     </button>
                 </div>
             </form>
+
+            <ConfirmationModal
+                isOpen={isConfirmOpen}
+                title="Create Brand"
+                message={`Are you sure you want to create brand "${formData.brandName || "this brand"}"?`}
+                confirmText="Create Brand"
+                isLoading={isSubmitting}
+                onConfirm={handleConfirmSubmit}
+                onCancel={() => setIsConfirmOpen(false)}
+            />
         </>
     );
 };
