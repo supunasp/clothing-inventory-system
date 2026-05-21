@@ -1,9 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Tasks from './pages/Tasks';
+import LandingPage from './pages/LandingPage';
+import AppLayout from './components/layout/AppLayout';
 import { useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
@@ -16,50 +17,67 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+const ProtectedLayout = ({ children }) => {
+  return (
+    <ProtectedRoute>
+      <AppLayout>
+        {children}
+      </AppLayout>
+    </ProtectedRoute>
+  );
+};
+
 function App() {
   const { user } = useAuth();
 
   return (
     <Router>
-      {user && <Navbar />}
-
       <Routes>
         <Route
           path="/"
-          element={user ? <Navigate to="/tasks" replace /> : <Navigate to="/login" replace />}
+          element={user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />}
         />
 
         <Route
           path="/login"
-          element={user ? <Navigate to="/tasks" replace /> : <Login />}
+          element={user ? <Navigate to="/dashboard" replace /> : <Login />}
         />
 
         <Route
           path="/register"
-          element={user ? <Navigate to="/tasks" replace /> : <Register />}
+          element={user ? <Navigate to="/dashboard" replace /> : <Register />}
+        />
+
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedLayout>
+              <LandingPage />
+            </ProtectedLayout>
+          }
         />
 
         <Route
           path="/profile"
           element={
-            <ProtectedRoute>
+            <ProtectedLayout>
               <Profile />
-            </ProtectedRoute>
+            </ProtectedLayout>
           }
         />
 
         <Route
           path="/tasks"
           element={
-            <ProtectedRoute>
+            <ProtectedLayout>
               <Tasks />
-            </ProtectedRoute>
+            </ProtectedLayout>
           }
         />
 
         <Route
           path="*"
-          element={user ? <Navigate to="/tasks" replace /> : <Navigate to="/login" replace />}
+          element={user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />}
         />
       </Routes>
     </Router>

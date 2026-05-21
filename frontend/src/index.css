@@ -1,3 +1,212 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    .all-\[unset\] {
+        all: unset;
+    }
+}
+
+:root {
+    --base-white: rgba(255, 255, 255, 1);
+    --colors-accents-blue: rgba(0, 136, 255, 1);
+    --colors-accents-red: rgba(255, 56, 60, 1);
+    --colorsbrandprimary-500: rgba(33, 102, 240, 1);
+    --colorsgraygray-700: rgba(65, 70, 81, 1);
+    --foundations-general-white: rgba(255, 255, 255, 1);
+    --foundations-grayscale-0: rgba(250, 253, 252, 1);
+    --foundations-grayscale-200: rgba(221, 225, 223, 1);
+    --foundations-grayscale-400: rgba(144, 147, 146, 1);
+    --foundations-grayscale-600: rgba(75, 80, 78, 1);
+    --foundations-grayscale-700: rgba(46, 51, 49, 1);
+    --foundations-grayscale-800: rgba(29, 34, 32, 1);
+    --foundations-grayscale-900: rgba(9, 15, 13, 1);
+    --foundations-green-500: rgba(0, 159, 109, 1);
+    --foundations-yellow-50: rgba(251, 227, 190, 1);
+    --global-padding-md: 16px;
+    --global-padding-sm: 12px;
+    --global-padding-xs: 8px;
+    --global-padding-xxs: 4px;
+    --global-radius-s: 8px;
+    --gray-200: rgba(233, 234, 235, 1);
+    --gray-300: rgba(208, 213, 221, 1);
+    --gray-600: rgba(83, 88, 98, 1);
+    --gray-700: rgba(52, 64, 84, 1);
+    --gray-900: rgba(24, 29, 39, 1);
+    --padding-padding-none: var(--spacing-primitives-0);
+    --shadow-xs: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
+    --spacing-primitives-0: 0px;
+    --spacing-primitives-8: 8px;
+    --text-sm-medium-font-family: "Inter", Helvetica;
+    --text-sm-medium-font-size: 14px;
+    --text-sm-medium-font-style: normal;
+    --text-sm-medium-font-weight: 500;
+    --text-sm-medium-letter-spacing: 0px;
+    --text-sm-medium-line-height: 20px;
+    --text-xl-24-font-family: "Inter", Helvetica;
+    --text-xl-24-font-size: 24px;
+    --text-xl-24-font-style: normal;
+    --text-xl-24-font-weight: 500;
+    --text-xl-24-letter-spacing: 0px;
+    --text-xl-24-line-height: 32px;
+    --tokens-background-bg-secondary: var(--foundations-general-white);
+    --tokens-border-border-primary: var(--foundations-grayscale-200);
+    --tokens-button-primary: var(--foundations-green-500);
+    --tokens-text-primary: var(--foundations-grayscale-900);
+    --tokens-text-secondary: var(--foundations-grayscale-600);
+    --white: rgba(255, 255, 255, 1);
+}
+
+/*
+
+To enable a theme in your HTML, simply add one of the following data attributes to an HTML element, like so:
+
+<body data-tokens-mode="light-mode">
+    <!-- the rest of your content -->
+</body>
+
+You can apply the theme on any DOM node, not just the `body`
+
+*/
+
+[data-tokens-mode="light-mode"] {
+    --tokens-background-bg-secondary: var(--foundations-general-white);
+    --tokens-border-border-primary: var(--foundations-grayscale-200);
+    --tokens-text-primary: var(--foundations-grayscale-900);
+    --tokens-text-secondary: var(--foundations-grayscale-600);
+}
+
+[data-tokens-mode="dark-mode"] {
+    --tokens-background-bg-secondary: var(--foundations-grayscale-800);
+    --tokens-border-border-primary: var(--foundations-grayscale-700);
+    --tokens-text-primary: var(--foundations-grayscale-0);
+    --tokens-text-secondary: var(--foundations-grayscale-400);
+}
+
+[data-colors-mode="light"] {
+    --colors-accents-blue: rgba(0, 136, 255, 1);
+    --colors-accents-red: rgba(255, 56, 60, 1);
+}
+
+[data-colors-mode="dark"] {
+    --colors-accents-blue: rgba(0, 145, 255, 1);
+    --colors-accents-red: rgba(255, 66, 69, 1);
+}
+
+[data-colors-mode="IC-light"] {
+    --colors-accents-blue: rgba(30, 110, 244, 1);
+    --colors-accents-red: rgba(233, 21, 45, 1);
+}
+
+[data-colors-mode="IC-dark"] {
+    --colors-accents-blue: rgba(92, 184, 255, 1);
+    --colors-accents-red: rgba(255, 97, 101, 1);
+}
+
+:root {
+    --animate-spin: spin 1s linear infinite;
+}
+
+.animate-fade-in {
+    animation: fade-in 1s var(--animation-delay, 0s) ease forwards;
+}
+
+.animate-fade-up {
+    animation: fade-up 1s var(--animation-delay, 0s) ease forwards;
+}
+
+.animate-marquee {
+    animation: marquee var(--duration) infinite linear;
+}
+
+.animate-marquee-vertical {
+    animation: marquee-vertical var(--duration) linear infinite;
+}
+
+.animate-shimmer {
+    animation: shimmer 8s infinite;
+}
+
+.animate-spin {
+    animation: var(--animate-spin);
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(1turn);
+    }
+}
+
+@keyframes image-glow {
+    0% {
+        opacity: 0;
+        animation-timing-function: cubic-bezier(0.74, 0.25, 0.76, 1);
+    }
+
+    10% {
+        opacity: 0.7;
+        animation-timing-function: cubic-bezier(0.12, 0.01, 0.08, 0.99);
+    }
+
+    to {
+        opacity: 0.4;
+    }
+}
+
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes fade-up {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes shimmer {
+    0%,
+    90%,
+    to {
+        background-position: calc(-100% - var(--shimmer-width)) 0;
+    }
+
+    30%,
+    60% {
+        background-position: calc(100% + var(--shimmer-width)) 0;
+    }
+}
+
+@keyframes marquee {
+    0% {
+        transform: translate(0);
+    }
+
+    to {
+        transform: translateX(calc(-100% - var(--gap)));
+    }
+}
+
+@keyframes marquee-vertical {
+    0% {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(calc(-100% - var(--gap)));
+    }
+}
