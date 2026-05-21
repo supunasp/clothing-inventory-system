@@ -1,5 +1,6 @@
 const productService = require('../services/productService');
 const {convertToCategoryResponse} = require('./productCategoryController');
+const {convertToBrandResponse} = require('./productBrandController');
 
 const createProduct = async (req, res) => {
     try {
@@ -68,6 +69,7 @@ const convertToProductResponse = (product) => ({
     name: product.name,
     description: product.description,
     category: product.category ? convertToCategoryResponse(product.category) : null,
+    brand: product.brand ? convertToBrandResponse(product.brand) : null,
 });
 
 const handleControllerError = (res, error, fallbackMessage) => {

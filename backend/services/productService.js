@@ -2,10 +2,13 @@ const Product = require('../models/Product');
 const {
     findCategoryDocumentByCategoryId,
 } = require('./productCategoryService');
+const {
+    findBrandDocumentByBrandId,
+} = require('./productBrandService');
 
-const createProduct = async ({productId, name, description, category}) => {
-    if (!productId || !name || !category) {
-        const error = new Error('productId, name, and category are required');
+const createProduct = async ({productId, name, description, category, brand}) => {
+    if (!productId || !name || !category || !brand) {
+        const error = new Error('productId, name, brand and category are required');
         error.statusCode = 400;
         throw error;
     }
@@ -19,25 +22,28 @@ const createProduct = async ({productId, name, description, category}) => {
     }
 
     const existingCategory = await findCategoryDocumentByCategoryId(category);
+    const existingBrand = await findBrandDocumentByBrandId(brand);
 
     const product = await Product.create({
         productId: productId,
         name: name,
         description: description,
         category: existingCategory._id,
+        brand: existingBrand._id,
     });
 
-    return Product.findById(product._id).populate('category');
+    return Product.findById(product._id).populate('category').populate('brand');
 };
 
 const getProducts = async () => {
     return Product.find()
         .populate('category')
+        .populate('brand')
         .sort({createdAt: -1});
 };
 
 const getProductById = async (productId) => {
-    const product = await Product.findOne({productId}).populate('category');
+    const product = await Product.findOne({productId}).populate('category').populate('brand');
 
     if (!product) {
         const error = new Error('Product not found');
@@ -48,7 +54,7 @@ const getProductById = async (productId) => {
     return product;
 };
 
-const updateProduct = async (productId, {name, description, category}) => {
+const updateProduct = async (productId, {name, description, category, brand}) => {
     const updateData = {};
 
     if (name !== undefined) {
@@ -64,14 +70,21 @@ const updateProduct = async (productId, {name, description, category}) => {
         updateData.category = existingCategory._id;
     }
 
+
+    if (brand !== undefined) {
+        const existingBrand = await findBrandDocumentByBrandId(category);
+        updateData.brand = existingBrand._id;
+    }
+
     const updatedProduct = await Product.findOneAndUpdate(
         {productId},
         updateData,
         {
             new: true,
             runValidators: true,
-        }
-    ).populate('category');
+        })
+        .populate('category')
+        .populate('brand');
 
     if (!updatedProduct) {
         const error = new Error('Product not found');
@@ -83,7 +96,10 @@ const updateProduct = async (productId, {name, description, category}) => {
 };
 
 const deleteProduct = async (productId) => {
-    const deletedProduct = await Product.findOneAndDelete({productId}).populate('category');
+    const deletedProduct = await Product
+        .findOneAndDelete({productId})
+        .populate('category')
+        .populate('brand');
 
     if (!deletedProduct) {
         const error = new Error('Product not found');
