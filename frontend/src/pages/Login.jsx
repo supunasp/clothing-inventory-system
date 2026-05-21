@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../axiosConfig';
@@ -9,7 +10,6 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -52,7 +52,14 @@ const Login = () => {
             </div>
           )}
 
-          <div className="mb-4">
+          <div className="mb-4 relative">
+            <Mail
+              size={18}
+              strokeWidth={1.8}
+              className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"
+              aria-hidden="true"
+            />
+
             <input
               type="email"
               name="email"
@@ -60,11 +67,18 @@ const Login = () => {
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full rounded-xl bg-gray-50 border border-gray-100 px-5 py-4 text-sm outline-none focus:border-blue-500"
+              className="w-full rounded-xl bg-gray-50 border border-gray-100 py-4 pl-14 pr-5 text-sm outline-none focus:border-blue-500"
             />
           </div>
 
           <div className="mb-3 relative">
+            <LockKeyhole
+              size={18}
+              strokeWidth={1.8}
+              className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"
+              aria-hidden="true"
+            />
+
             <input
               type={showPassword ? 'text' : 'password'}
               name="password"
@@ -72,15 +86,20 @@ const Login = () => {
               value={formData.password}
               onChange={handleChange}
               required
-              className="w-full rounded-xl bg-gray-50 border border-gray-100 px-5 py-4 pr-16 text-sm outline-none focus:border-blue-500"
+              className="w-full rounded-xl bg-gray-50 border border-gray-100 py-4 pl-14 pr-16 text-sm outline-none focus:border-blue-500"
             />
 
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-5 top-1/2 -translate-y-1/2 text-xs text-gray-400"
+              className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
-              {showPassword ? 'Hide' : 'Show'}
+              {showPassword ? (
+                <EyeOff size={18} strokeWidth={1.8} />
+              ) : (
+                <Eye size={18} strokeWidth={1.8} />
+              )}
             </button>
           </div>
 
