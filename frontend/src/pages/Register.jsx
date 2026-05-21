@@ -1,4 +1,5 @@
 import {useState} from 'react';
+import { CheckSquare, Eye, EyeOff, LockKeyhole, Mail, User } from 'lucide-react';
 import {Link, useNavigate} from 'react-router-dom';
 import axiosInstance from '../axiosConfig';
 import {useAuth} from '../context/AuthContext';
@@ -73,28 +74,53 @@ const Register = () => {
                     )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <input
-                            type="text"
-                            name="firstName"
-                            placeholder="First Name"
-                            value={formData.firstName}
-                            onChange={handleChange}
-                            required
-                            className="w-full rounded-xl bg-gray-50 border border-gray-100 px-5 py-4 text-sm outline-none focus:border-blue-500"
-                        />
+                        <div className="relative">
+                            <User
+                                size={18}
+                                strokeWidth={1.8}
+                                className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"
+                                aria-hidden="true"
+                            />
 
-                        <input
-                            type="text"
-                            name="lastName"
-                            placeholder="Last Name"
-                            value={formData.lastName}
-                            onChange={handleChange}
-                            required
-                            className="w-full rounded-xl bg-gray-50 border border-gray-100 px-5 py-4 text-sm outline-none focus:border-blue-500"
-                        />
+                            <input
+                                type="text"
+                                name="firstName"
+                                placeholder="First Name"
+                                value={formData.firstName}
+                                onChange={handleChange}
+                                required
+                                className="w-full rounded-xl bg-gray-50 border border-gray-100 py-4 pl-14 pr-5 text-sm outline-none focus:border-blue-500"
+                            />
+                        </div>
+
+                        <div className="relative">
+                            <User
+                                size={18}
+                                strokeWidth={1.8}
+                                className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"
+                                aria-hidden="true"
+                            />
+
+                            <input
+                                type="text"
+                                name="lastName"
+                                placeholder="Last Name"
+                                value={formData.lastName}
+                                onChange={handleChange}
+                                required
+                                className="w-full rounded-xl bg-gray-50 border border-gray-100 py-4 pl-14 pr-5 text-sm outline-none focus:border-blue-500"
+                            />
+                        </div>
                     </div>
 
-                    <div className="mb-4">
+                    <div className="mb-4 relative">
+                        <Mail
+                            size={18}
+                            strokeWidth={1.8}
+                            className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"
+                            aria-hidden="true"
+                        />
+
                         <input
                             type="email"
                             name="email"
@@ -102,11 +128,18 @@ const Register = () => {
                             value={formData.email}
                             onChange={handleChange}
                             required
-                            className="w-full rounded-xl bg-gray-50 border border-gray-100 px-5 py-4 text-sm outline-none focus:border-blue-500"
+                            className="w-full rounded-xl bg-gray-50 border border-gray-100 py-4 pl-14 pr-5 text-sm outline-none focus:border-blue-500"
                         />
                     </div>
 
                     <div className="mb-5 relative">
+                        <LockKeyhole
+                            size={18}
+                            strokeWidth={1.8}
+                            className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"
+                            aria-hidden="true"
+                        />
+
                         <input
                             type={showPassword ? 'text' : 'password'}
                             name="password"
@@ -115,32 +148,48 @@ const Register = () => {
                             onChange={handleChange}
                             required
                             minLength={6}
-                            className="w-full rounded-xl bg-gray-50 border border-gray-100 px-5 py-4 pr-16 text-sm outline-none focus:border-blue-500"
+                            className="w-full rounded-xl bg-gray-50 border border-gray-100 py-4 pl-14 pr-16 text-sm outline-none focus:border-blue-500"
                         />
 
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-5 top-1/2 -translate-y-1/2 text-xs text-gray-400"
+                            className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                            aria-label={showPassword ? 'Hide password' : 'Show password'}
                         >
-                            {showPassword ? 'Hide' : 'Show'}
+                            {showPassword ? (
+                                <EyeOff size={18} strokeWidth={1.8} />
+                            ) : (
+                                <Eye size={18} strokeWidth={1.8} />
+                            )}
                         </button>
                     </div>
 
-                    <label className="flex items-center gap-2 text-xs text-gray-500 mb-8">
-                        <input
-                            type="checkbox"
-                            checked={agree}
-                            onChange={(e) => setAgree(e.target.checked)}
-                            className="rounded"
-                        />
-                        <span>
-              I agree to the{' '}
-                            <button type="button" className="text-blue-700 font-semibold">
-                Terms & Privacy Policy
-              </button>
-            </span>
-                    </label>
+            {/*        <label className="flex items-center gap-2 text-xs text-gray-500 mb-8">*/}
+            {/*            <input*/}
+            {/*                type="checkbox"*/}
+            {/*                checked={agree}*/}
+            {/*                onChange={(e) => setAgree(e.target.checked)}*/}
+            {/*                className="sr-only"*/}
+            {/*            />*/}
+
+            {/*            <span*/}
+            {/*                className={`flex h-4 w-4 items-center justify-center rounded border ${*/}
+            {/*                    agree*/}
+            {/*                        ? 'border-blue-600 bg-blue-600 text-white'*/}
+            {/*                        : 'border-gray-300 bg-white text-transparent'*/}
+            {/*                }`}*/}
+            {/*            >*/}
+            {/*                <CheckSquare size={12} strokeWidth={2} />*/}
+            {/*            </span>*/}
+
+            {/*            <span>*/}
+            {/*  I agree to the{' '}*/}
+            {/*                <button type="button" className="text-blue-700 font-semibold">*/}
+            {/*    Terms & Privacy Policy*/}
+            {/*  </button>*/}
+            {/*</span>*/}
+            {/*        </label>*/}
 
                     <button
                         type="submit"
