@@ -202,7 +202,11 @@ const AdminDashboard = () => {
                 <section className="rounded-xl border border-gray-100 bg-white shadow-sm">
                     <div className="flex items-center justify-between px-5 py-4">
                         <h2 className="text-sm font-medium text-gray-900">Brand</h2>
-                        <button className="rounded-md bg-emerald-600 px-4 py-2 text-xs font-medium text-white hover:bg-emerald-700">
+                        <button
+                            type="button"
+                            onClick={() => navigate("/admin/brands")}
+                            className="rounded-md bg-emerald-600 px-4 py-2 text-xs font-medium text-white hover:bg-emerald-700"
+                        >
                             + Add Brand
                         </button>
                     </div>

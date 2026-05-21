@@ -6,6 +6,7 @@ import LandingPage from './pages/LandingPage';
 import CreateProduct from './components/products/CreateProduct';
 import AddInventory from './components/products/AddInventory';
 import AddCategory from './components/products/AddCategory';
+import AddBrand from './components/products/AddBrand';
 import AppLayout from './components/layout/AppLayout';
 import {useAuth} from './context/AuthContext';
 
@@ -82,6 +83,15 @@ function App() {
                     element={
                         <ProtectedLayout>
                             <AddCategory/>
+                        </ProtectedLayout>
+                    }
+                />
+
+                <Route
+                    path="/admin/brands"
+                    element={
+                        <ProtectedLayout>
+                            <AddBrand/>
                         </ProtectedLayout>
                     }
                 />
