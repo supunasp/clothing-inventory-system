@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../axiosConfig";
+import ConfirmationModal from "../common/ConfirmationModal";
 
 const AddCategory = () => {
     const navigate = useNavigate();
@@ -9,6 +10,7 @@ const AddCategory = () => {
         categoryId: "",
         categoryName: "",
     });
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
@@ -24,6 +26,13 @@ const AddCategory = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+        setSuccessMessage("");
+        setErrorMessage("");
+
+        setIsConfirmOpen(true);
+    };
+
+    const handleConfirmSubmit = async () => {
         setIsSubmitting(true);
         setSuccessMessage("");
         setErrorMessage("");
@@ -36,6 +45,7 @@ const AddCategory = () => {
                 categoryId: "",
                 categoryName: "",
             });
+            setIsConfirmOpen(false);
         } catch (error) {
             setErrorMessage(
                 error.response?.data?.message || "Unable to create category."
@@ -124,6 +134,16 @@ const AddCategory = () => {
                     </button>
                 </div>
             </form>
+
+            <ConfirmationModal
+                isOpen={isConfirmOpen}
+                title="Create Category"
+                message={`Are you sure you want to create category "${formData.categoryName || "this category"}"?`}
+                confirmText="Create Category"
+                isLoading={isSubmitting}
+                onConfirm={handleConfirmSubmit}
+                onCancel={() => setIsConfirmOpen(false)}
+            />
         </>
     );
 };

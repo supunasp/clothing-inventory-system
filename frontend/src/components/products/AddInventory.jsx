@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import ConfirmationModal from "../common/ConfirmationModal";
 
 const AddInventory = () => {
     const navigate = useNavigate();
@@ -13,6 +14,8 @@ const AddInventory = () => {
         amount: "",
         reference: "",
     });
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
 
@@ -35,13 +38,31 @@ const AddInventory = () => {
             return;
         }
 
-        setSuccessMessage("Inventory saved successfully.");
-        setFormData({
-            color: "",
-            size: "",
-            amount: "",
-            reference: "",
-        });
+        setIsConfirmOpen(true);
+    };
+
+    const handleConfirmUpdate = async () => {
+        setIsUpdating(true);
+        setErrorMessage("");
+
+        try {
+            // Add inventory API call here when backend endpoint is ready.
+            // Example:
+            // await axiosInstance.post("/api/inventory", formData);
+
+            setSuccessMessage("Inventory saved successfully.");
+            setFormData({
+                color: "",
+                size: "",
+                amount: "",
+                reference: "",
+            });
+            setIsConfirmOpen(false);
+        } catch (error) {
+            setErrorMessage("Unable to update inventory.");
+        } finally {
+            setIsUpdating(false);
+        }
     };
 
     return (
@@ -168,6 +189,16 @@ const AddInventory = () => {
                     </button>
                 </div>
             </form>
+
+            <ConfirmationModal
+                isOpen={isConfirmOpen}
+                title="Update Inventory"
+                message={`Are you sure you want to add ${formData.amount || 0} items to this inventory?`}
+                confirmText="Update Inventory"
+                isLoading={isUpdating}
+                onConfirm={handleConfirmUpdate}
+                onCancel={() => setIsConfirmOpen(false)}
+            />
         </>
     );
 };

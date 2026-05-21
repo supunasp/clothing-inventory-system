@@ -1,6 +1,7 @@
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import axiosInstance from "../../axiosConfig";
+import ConfirmationModal from "../common/ConfirmationModal";
 
 const CreateProduct = () => {
     const navigate = useNavigate();
@@ -12,6 +13,7 @@ const CreateProduct = () => {
         description: "",
         category: "",
     });
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
@@ -40,6 +42,13 @@ const CreateProduct = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+        setSuccessMessage("");
+        setErrorMessage("");
+
+        setIsConfirmOpen(true);
+    };
+
+    const handleConfirmSubmit = async () => {
         setIsSubmitting(true);
         setSuccessMessage("");
         setErrorMessage("");
@@ -54,6 +63,7 @@ const CreateProduct = () => {
                 description: "",
                 category: "",
             });
+            setIsConfirmOpen(false);
         } catch (error) {
             setErrorMessage(
                 error.response?.data?.message || "Unable to create product."
@@ -198,6 +208,16 @@ const CreateProduct = () => {
                     </button>
                 </div>
             )}
+
+            <ConfirmationModal
+                isOpen={isConfirmOpen}
+                title="Create Product"
+                message={`Are you sure you want to create product "${formData.name || "this product"}"?`}
+                confirmText="Create Product"
+                isLoading={isSubmitting}
+                onConfirm={handleConfirmSubmit}
+                onCancel={() => setIsConfirmOpen(false)}
+            />
         </>
     );
 };
