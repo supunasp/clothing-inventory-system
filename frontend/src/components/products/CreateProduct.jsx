@@ -8,6 +8,7 @@ const CreateProduct = () => {
 
     const [categories, setCategories] = useState([]);
     const [brands, setBrands] = useState([]);
+    const [createdProduct, setCreatedProduct] = useState(null);
     const [formData, setFormData] = useState({
         productId: "",
         name: "",
@@ -61,8 +62,8 @@ const CreateProduct = () => {
         setErrorMessage("");
 
         try {
-            await axiosInstance.post("/api/products", formData);
-
+            const response = await axiosInstance.post("/api/products", formData);
+            setCreatedProduct(response.data.product);
             setSuccessMessage("New Product Saved!");
             setFormData({
                 productId: "",
@@ -221,6 +222,8 @@ const CreateProduct = () => {
                     <p className="text-gray-500">Product Description</p>
                     <button
                         type="button"
+                        onClick={() => navigate("/inventory/add", {state: {product: createdProduct}})}
+                        disabled={!createdProduct}
                         className="rounded-md bg-emerald-600 px-8 py-2 text-xs font-medium text-white hover:bg-emerald-700"
                     >
                         Update Inventory
