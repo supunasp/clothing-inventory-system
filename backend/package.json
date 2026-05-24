@@ -18,7 +18,8 @@
     "express": "^4.17.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^6.0.14",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "winston": "^3.19.0"
   },
   "devDependencies": {
     "esm": "^3.2.25",

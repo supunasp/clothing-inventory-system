@@ -1,5 +1,5 @@
 const ProductBrand = require('../models/ProductBrand');
-
+require("../models/ProductCategory");
 const createBrand = async ({brandId, brandName}) => {
     if (!brandId || !brandName) {
         const error = new Error('brandId and brandName are required');
@@ -23,6 +23,30 @@ const createBrand = async ({brandId, brandName}) => {
 
 const getBrands = async () => {
     return ProductBrand.find().sort({createdAt: -1});
+};
+
+const getBrandsPaginated = async ({limit, skip, search}) => {
+    const filter = {};
+
+    if (search) {
+        filter.$or = [
+            {brandId: {$regex: search, $options: 'i'}},
+            {brandName: {$regex: search, $options: 'i'}},
+        ];
+    }
+
+    const [brands, totalItems] = await Promise.all([
+        ProductBrand.find(filter)
+            .sort({createdAt: -1})
+            .skip(skip)
+            .limit(limit),
+        ProductBrand.countDocuments(filter),
+    ]);
+
+    return {
+        brands,
+        totalItems,
+    };
 };
 
 const getBrandById = async (brandId) => {
@@ -89,6 +113,7 @@ const findBrandDocumentByBrandId = async (brandId) => {
 module.exports = {
     createBrand,
     getBrands,
+    getBrandsPaginated,
     getBrandById,
     updateBrand,
     deleteBrand,

@@ -1,4 +1,6 @@
 const productBrandService = require('../services/productBrandService');
+const {buildPaginationResponse, getPaginationParams} = require("../utils/pagination");
+const logger = require("../utils/logger");
 
 const createBrand = async (req, res) => {
     try {
@@ -9,12 +11,33 @@ const createBrand = async (req, res) => {
             brand: convertToBrandResponse(brand),
         });
     } catch (error) {
+
         return handleControllerError(res, error, 'Error creating brand');
     }
 };
 
 const getBrands = async (req, res) => {
     try {
+        if (req.query.page || req.query.limit || req.query.search) {
+            const {page, limit, skip} = getPaginationParams(req.query);
+
+            const {brands, totalItems} =
+                await productBrandService.getBrandsPaginated({
+                    limit,
+                    skip,
+                    search: req.query.search,
+                });
+
+            return res.status(200).json(
+                buildPaginationResponse({
+                    data: brands.map(convertToBrandResponse),
+                    page,
+                    limit,
+                    totalItems,
+                })
+            );
+        }
+
         const brands = await productBrandService.getBrands();
 
         return res.status(200).json(brands.map(convertToBrandResponse));
@@ -68,6 +91,7 @@ const convertToBrandResponse = (brand) => ({
 });
 
 const handleControllerError = (res, error, fallbackMessage) => {
+    logger.error(fallbackMessage, error);
     return res.status(error.statusCode || 500).json({
         message: error.statusCode ? error.message : fallbackMessage,
         error: error.message,

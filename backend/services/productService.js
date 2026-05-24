@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const ProductVariant = require('../models/ProductVariant');
 const {
     findCategoryDocumentByCategoryId,
 } = require('./productCategoryService');
@@ -40,6 +41,64 @@ const getProducts = async () => {
         .populate('category')
         .populate('brand')
         .sort({createdAt: -1});
+};
+
+const getProductsPaginated = async ({limit, skip, category, brand, search}) => {
+    const filter = {};
+
+    if (search) {
+        filter.$or = [
+            {productId: {$regex: search, $options: 'i'}},
+            {name: {$regex: search, $options: 'i'}},
+            {description: {$regex: search, $options: 'i'}},
+        ];
+    }
+
+    const query = Product.find(filter)
+        .populate('category')
+        .populate('brand')
+        .sort({createdAt: -1});
+
+    const products = await query.skip(skip).limit(limit);
+    const totalItems = await Product.countDocuments(filter);
+
+    const productIds = products.map((product) => product._id);
+
+    const inventorySummary = await ProductVariant.aggregate([
+        {
+            $match: {
+                product: {$in: productIds},
+            },
+        },
+        {
+            $group: {
+                _id: '$product',
+                inventory: {$sum: '$stockAmount'},
+            },
+        },
+    ]);
+
+    const inventoryMap = inventorySummary.reduce((map, item) => {
+        map[item._id.toString()] = item.inventory;
+        return map;
+    }, {});
+
+    const data = products
+        .filter((product) => {
+            const matchesCategory = category ? product.category?.categoryId === category : true;
+            const matchesBrand = brand ? product.brand?.brandId === brand : true;
+
+            return matchesCategory && matchesBrand;
+        })
+        .map((product) => ({
+            product,
+            inventory: inventoryMap[product._id.toString()] || 0,
+        }));
+
+    return {
+        data,
+        totalItems,
+    };
 };
 
 const getProductById = async (productId) => {
@@ -125,6 +184,7 @@ const findProductDocumentByProductId = async (productId) => {
 module.exports = {
     createProduct,
     getProducts,
+    getProductsPaginated,
     getProductById,
     updateProduct,
     deleteProduct,

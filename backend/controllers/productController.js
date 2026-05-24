@@ -1,6 +1,8 @@
 const productService = require('../services/productService');
 const {convertToCategoryResponse} = require('./productCategoryController');
 const {convertToBrandResponse} = require('./productBrandController');
+const {getPaginationParams, buildPaginationResponse} = require("../utils/pagination");
+const logger = require("../utils/logger");
 
 const createProduct = async (req, res) => {
     try {
@@ -17,9 +19,35 @@ const createProduct = async (req, res) => {
 
 const getProducts = async (req, res) => {
     try {
-        const products = await productService.getProducts();
+        if (req.query.page || req.query.limit || req.query.search || req.query.category || req.query.brand) {
+            const {page, limit, skip} = getPaginationParams(req.query);
 
-        return res.status(200).json(products.map(convertToProductResponse));
+            const result = await productService.getProductsPaginated({
+                limit,
+                skip,
+                category: req.query.category,
+                brand: req.query.brand,
+                search: req.query.search,
+            });
+
+            return res.status(200).json(
+                buildPaginationResponse({
+                    data: result.data.map(({product, inventory}) =>
+                        convertToProductResponse(product, inventory)
+                    ),
+                    page,
+                    limit,
+                    totalItems: result.totalItems,
+                })
+            );
+        } else {
+
+            const products = await productService.getProducts();
+
+            return res.status(200)
+                .json(
+                    products.map((product) => convertToProductResponse(product)));
+        }
     } catch (error) {
         return handleControllerError(res, error, 'Error fetching products');
     }
@@ -64,15 +92,17 @@ const deleteProduct = async (req, res) => {
     }
 };
 
-const convertToProductResponse = (product) => ({
+const convertToProductResponse = (product, inventory = undefined) => ({
     productId: product.productId,
     name: product.name,
     description: product.description,
     category: product.category ? convertToCategoryResponse(product.category) : null,
     brand: product.brand ? convertToBrandResponse(product.brand) : null,
+    ...(inventory !== undefined ? {inventory} : {}),
 });
 
 const handleControllerError = (res, error, fallbackMessage) => {
+    logger.error(fallbackMessage, error);
     return res.status(error.statusCode || 500).json({
         message: error.statusCode ? error.message : fallbackMessage,
         error: error.message,
