@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import axiosInstance from "../../axiosConfig";
 import ConfirmationModal from "../common/ConfirmationModal";
 
 const AddInventory = () => {
