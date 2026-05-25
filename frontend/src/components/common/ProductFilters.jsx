@@ -1,3 +1,5 @@
+import { Search } from "lucide-react";
+
 const ProductFilters = ({
     categories,
     brands,
@@ -5,6 +7,8 @@ const ProductFilters = ({
     selectedBrand,
     onCategoryChange,
     onBrandChange,
+    searchInput,
+    onSearchChange,
 }) => (
     <>
         <label className="flex items-center gap-3 text-xs text-gray-600">
@@ -38,6 +42,24 @@ const ProductFilters = ({
                 ))}
             </select>
         </label>
+
+        {onSearchChange && (
+            <div className="relative">
+                <Search
+                    size={14}
+                    strokeWidth={1.8}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    aria-hidden="true"
+                />
+                <input
+                    type="search"
+                    value={searchInput || ""}
+                    onChange={onSearchChange}
+                    placeholder="Search"
+                    className="h-9 w-56 rounded-md border border-gray-300 bg-white pl-8 pr-3 text-xs outline-none focus:border-blue-500"
+                />
+            </div>
+        )}
     </>
 );
 

@@ -43,6 +43,8 @@ const AdminDashboard = () => {
 
     const [selectedCategory, setSelectedCategory] = useState("");
     const [selectedBrand, setSelectedBrand] = useState("");
+    const [searchInput, setSearchInput] = useState("");
+    const [searchTerm, setSearchTerm] = useState("");
 
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
@@ -74,6 +76,7 @@ const AdminDashboard = () => {
                     limit: PAGE_SIZE,
                     category: selectedCategory || undefined,
                     brand: selectedBrand || undefined,
+                    search: searchTerm || undefined,
                 },
             });
 
@@ -84,11 +87,19 @@ const AdminDashboard = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [productPage, selectedCategory, selectedBrand]);
+    }, [productPage, selectedCategory, selectedBrand, searchTerm]);
 
     useEffect(() => {
         loadProducts();
     }, [loadProducts]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearchTerm(searchInput);
+            setProductPage(1);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchInput]);
 
     const handleToggleStatus = async (product) => {
         setStatusTogglingId(product.productId);
@@ -173,6 +184,8 @@ const AdminDashboard = () => {
                         selectedBrand={selectedBrand}
                         onCategoryChange={handleCategoryFilterChange}
                         onBrandChange={handleBrandFilterChange}
+                        searchInput={searchInput}
+                        onSearchChange={(e) => setSearchInput(e.target.value)}
                     />
                 </div>
 
@@ -221,16 +234,8 @@ const AdminDashboard = () => {
                                     <td className="px-5 py-4 text-gray-600">
                                         {product.inventory ?? 0}
                                     </td>
-                                    <td className="px-5 py-4">
-                                        <span
-                                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                                                product.active
-                                                    ? "bg-emerald-50 text-emerald-700"
-                                                    : "bg-red-50 text-red-700"
-                                            }`}
-                                        >
-                                            {product.active ? "Active" : "Inactive"}
-                                        </span>
+                                    <td className="px-5 py-4 text-gray-700">
+                                        {product.active ? "Active" : "Inactive"}
                                     </td>
                                     <td className="px-5 py-4">
                                         <div className="flex justify-end gap-2">
@@ -240,7 +245,7 @@ const AdminDashboard = () => {
                                                 disabled={statusTogglingId === product.productId}
                                                 className={`rounded-md px-3 py-1.5 text-xs font-medium text-white disabled:cursor-not-allowed disabled:opacity-50 ${
                                                     product.active
-                                                        ? "bg-amber-500 hover:bg-amber-600"
+                                                        ? "bg-red-500 hover:bg-red-600"
                                                         : "bg-emerald-600 hover:bg-emerald-700"
                                                 }`}
                                             >

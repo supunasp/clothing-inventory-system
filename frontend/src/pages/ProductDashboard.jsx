@@ -19,6 +19,8 @@ const ProductDashboard = () => {
     const { categories, brands } = useReferenceData();
     const [selectedCategory, setSelectedCategory] = useState("");
     const [selectedBrand, setSelectedBrand] = useState("");
+    const [searchInput, setSearchInput] = useState("");
+    const [searchTerm, setSearchTerm] = useState("");
     const [isLoadingProducts, setIsLoadingProducts] = useState(false);
     const [productsError, setProductsError] = useState("");
 
@@ -46,6 +48,7 @@ const ProductDashboard = () => {
                     limit: PAGE_SIZE,
                     category: selectedCategory || undefined,
                     brand: selectedBrand || undefined,
+                    search: searchTerm || undefined,
                     active: true,
                 },
             });
@@ -59,7 +62,15 @@ const ProductDashboard = () => {
         } finally {
             setIsLoadingProducts(false);
         }
-    }, [page, selectedCategory, selectedBrand]);
+    }, [page, selectedCategory, selectedBrand, searchTerm]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearchTerm(searchInput);
+            setPage(1);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchInput]);
 
     useEffect(() => {
         loadProducts();
@@ -204,6 +215,11 @@ const ProductDashboard = () => {
                             selectedBrand={selectedBrand}
                             onCategoryChange={handleCategoryFilterChange}
                             onBrandChange={handleBrandFilterChange}
+                            searchInput={searchInput}
+                            onSearchChange={(e) => {
+                                setSearchInput(e.target.value);
+                                handleClearSelection();
+                            }}
                         />
                     </div>
 
