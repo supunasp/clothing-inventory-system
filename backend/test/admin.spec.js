@@ -20,6 +20,54 @@ describe('Admin endpoints', () => {
         headers = authHeader(admin);
     });
 
+    describe('Staff access restrictions', () => {
+        let staffHeaders;
+
+        beforeEach(async () => {
+            const staff = await createStaffUser();
+            staffHeaders = authHeader(staff);
+        });
+
+        it('blocks staff from GET /api/admin/analytics', async () => {
+            const res = await chai.request(app).get('/api/admin/analytics').set(staffHeaders);
+            expect(res).to.have.status(403);
+        });
+
+        it('blocks staff from GET /api/admin/users', async () => {
+            const res = await chai.request(app).get('/api/admin/users').set(staffHeaders);
+            expect(res).to.have.status(403);
+        });
+
+        it('blocks staff from PUT /api/admin/users/:id/role', async () => {
+            const target = await createStaffUser({ email: 'target-r@test.com' });
+            const res = await chai
+                .request(app)
+                .put(`/api/admin/users/${target._id}/role`)
+                .set(staffHeaders)
+                .send({ role: 'admin' });
+            expect(res).to.have.status(403);
+        });
+
+        it('blocks staff from PUT /api/admin/users/:id/status', async () => {
+            const target = await createStaffUser({ email: 'target-s@test.com' });
+            const res = await chai
+                .request(app)
+                .put(`/api/admin/users/${target._id}/status`)
+                .set(staffHeaders)
+                .send({ active: false });
+            expect(res).to.have.status(403);
+        });
+
+        it('blocks staff from DELETE /api/admin/users/:id', async () => {
+            const target = await createStaffUser({ email: 'target-d@test.com' });
+            const res = await chai
+                .request(app)
+                .delete(`/api/admin/users/${target._id}`)
+                .set(staffHeaders);
+            expect(res).to.have.status(403);
+        });
+    });
+
     describe('GET /api/admin/analytics', () => {
         it('returns counts that reflect current data', async () => {
             const category = await ProductCategory.create({ categoryId: 'A-C', categoryName: 'Shirts' });

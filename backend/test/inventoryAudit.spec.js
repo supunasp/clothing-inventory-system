@@ -6,7 +6,7 @@ const ProductCategory = require('../models/ProductCategory');
 const ProductBrand = require('../models/ProductBrand');
 const ProductVariant = require('../models/ProductVariant');
 const InventoryAudit = require('../models/InventoryAudit');
-const { createStaffUser, authHeader } = require('./helpers/auth');
+const { createStaffUser, createAdminUser, authHeader } = require('./helpers/auth');
 
 chai.use(chaiHttp);
 const { expect } = chai;
@@ -16,8 +16,19 @@ describe('InventoryAudit endpoints', () => {
     let headers;
 
     beforeEach(async () => {
-        user = await createStaffUser();
+        user = await createAdminUser();
         headers = authHeader(user);
+    });
+
+    it('blocks staff users from viewing audits', async () => {
+        const staff = await createStaffUser();
+
+        const res = await chai
+            .request(app)
+            .get('/api/inventory-audits?page=1&limit=10')
+            .set(authHeader(staff));
+
+        expect(res).to.have.status(403);
     });
 
     describe('GET /api/inventory-audits', () => {

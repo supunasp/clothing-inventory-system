@@ -4,7 +4,7 @@ const app = require('../server');
 const Product = require('../models/Product');
 const ProductBrand = require('../models/ProductBrand');
 const ProductCategory = require('../models/ProductCategory');
-const { createStaffUser, authHeader } = require('./helpers/auth');
+const { createStaffUser, createAdminUser, authHeader } = require('./helpers/auth');
 
 chai.use(chaiHttp);
 const { expect } = chai;
@@ -17,12 +17,65 @@ const seedBrand = (overrides = {}) =>
     });
 
 describe('ProductBrand endpoints', () => {
-    let user;
+    let admin;
     let headers;
 
     beforeEach(async () => {
-        user = await createStaffUser();
-        headers = authHeader(user);
+        admin = await createAdminUser();
+        headers = authHeader(admin);
+    });
+
+    describe('Staff access restrictions', () => {
+        let staffHeaders;
+
+        beforeEach(async () => {
+            const staff = await createStaffUser();
+            staffHeaders = authHeader(staff);
+        });
+
+        it('blocks staff from creating a brand', async () => {
+            const res = await chai
+                .request(app)
+                .post('/api/brands')
+                .set(staffHeaders)
+                .send({ brandId: 'STAFF-NO', brandName: 'X' });
+
+            expect(res).to.have.status(403);
+        });
+
+        it('blocks staff from updating a brand', async () => {
+            await seedBrand({ brandId: 'B-EXIST' });
+
+            const res = await chai
+                .request(app)
+                .put('/api/brands/B-EXIST')
+                .set(staffHeaders)
+                .send({ brandName: 'X' });
+
+            expect(res).to.have.status(403);
+        });
+
+        it('blocks staff from deleting a brand', async () => {
+            await seedBrand({ brandId: 'B-EXIST-D' });
+
+            const res = await chai
+                .request(app)
+                .delete('/api/brands/B-EXIST-D')
+                .set(staffHeaders);
+
+            expect(res).to.have.status(403);
+        });
+
+        it('allows staff to GET brands', async () => {
+            await seedBrand({ brandId: 'B-READ' });
+
+            const res = await chai
+                .request(app)
+                .get('/api/brands')
+                .set(staffHeaders);
+
+            expect(res).to.have.status(200);
+        });
     });
 
     describe('POST /api/brands', () => {

@@ -4,7 +4,7 @@ const app = require('../server');
 const Product = require('../models/Product');
 const ProductCategory = require('../models/ProductCategory');
 const ProductBrand = require('../models/ProductBrand');
-const { createStaffUser, authHeader } = require('./helpers/auth');
+const { createStaffUser, createAdminUser, authHeader } = require('./helpers/auth');
 
 chai.use(chaiHttp);
 const { expect } = chai;
@@ -17,12 +17,65 @@ const seedCategory = (overrides = {}) =>
     });
 
 describe('ProductCategory endpoints', () => {
-    let user;
+    let admin;
     let headers;
 
     beforeEach(async () => {
-        user = await createStaffUser();
-        headers = authHeader(user);
+        admin = await createAdminUser();
+        headers = authHeader(admin);
+    });
+
+    describe('Staff access restrictions', () => {
+        let staffHeaders;
+
+        beforeEach(async () => {
+            const staff = await createStaffUser();
+            staffHeaders = authHeader(staff);
+        });
+
+        it('blocks staff from creating a category', async () => {
+            const res = await chai
+                .request(app)
+                .post('/api/categories')
+                .set(staffHeaders)
+                .send({ categoryId: 'STAFF-NO', categoryName: 'X' });
+
+            expect(res).to.have.status(403);
+        });
+
+        it('blocks staff from updating a category', async () => {
+            await seedCategory({ categoryId: 'CAT-EXIST' });
+
+            const res = await chai
+                .request(app)
+                .put('/api/categories/CAT-EXIST')
+                .set(staffHeaders)
+                .send({ categoryName: 'X' });
+
+            expect(res).to.have.status(403);
+        });
+
+        it('blocks staff from deleting a category', async () => {
+            await seedCategory({ categoryId: 'CAT-EXIST-D' });
+
+            const res = await chai
+                .request(app)
+                .delete('/api/categories/CAT-EXIST-D')
+                .set(staffHeaders);
+
+            expect(res).to.have.status(403);
+        });
+
+        it('allows staff to GET categories', async () => {
+            await seedCategory({ categoryId: 'CAT-READ' });
+
+            const res = await chai
+                .request(app)
+                .get('/api/categories')
+                .set(staffHeaders);
+
+            expect(res).to.have.status(200);
+        });
     });
 
     describe('POST /api/categories', () => {

@@ -6,14 +6,16 @@ const {
     updateUserRole,
     deleteUser,
 } = require('../controllers/adminController');
-const {protect} = require('../middleware/authMiddleware');
+const {protect, adminOnly} = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.get('/analytics', protect, getAdminAnalytics);
-router.get('/users', protect, getUsers);
-router.put('/users/:id/status', protect, updateUserStatus);
-router.put('/users/:id/role', protect, updateUserRole);
-router.delete('/users/:id', protect, deleteUser);
+router.use(protect, adminOnly);
+
+router.get('/analytics', getAdminAnalytics);
+router.get('/users', getUsers);
+router.put('/users/:id/status', updateUserStatus);
+router.put('/users/:id/role', updateUserRole);
+router.delete('/users/:id', deleteUser);
 
 module.exports = router;

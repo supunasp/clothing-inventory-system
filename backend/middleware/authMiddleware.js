@@ -1,6 +1,7 @@
 
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { ROLE_ADMIN } = require('../constants');
 
 const protect = async (req, res, next) => {
     let token;
@@ -21,4 +22,11 @@ const protect = async (req, res, next) => {
     }
 };
 
-module.exports = { protect };
+const adminOnly = (req, res, next) => {
+    if (req.user && req.user.role === ROLE_ADMIN) {
+        return next();
+    }
+    return res.status(403).json({ message: 'Admin access required' });
+};
+
+module.exports = { protect, adminOnly };

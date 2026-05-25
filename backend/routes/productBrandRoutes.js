@@ -1,5 +1,5 @@
 const express = require('express');
-const {protect} = require('../middleware/authMiddleware');
+const {protect, adminOnly} = require('../middleware/authMiddleware');
 const {
     createBrand,
     getBrands,
@@ -10,10 +10,10 @@ const {
 
 const router = express.Router();
 
-router.post('/', protect, createBrand);
+router.post('/', protect, adminOnly, createBrand);
 router.get('/', protect, getBrands);
 router.get('/:brandId', protect, getBrandById);
-router.put('/:brandId', protect, updateBrand);
-router.delete('/:brandId', protect, deleteBrand);
+router.put('/:brandId', protect, adminOnly, updateBrand);
+router.delete('/:brandId', protect, adminOnly, deleteBrand);
 
 module.exports = router;
