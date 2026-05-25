@@ -17,9 +17,25 @@ const createProduct = async (req, res) => {
     }
 };
 
+const parseActiveQuery = (raw) => {
+    if (raw === undefined || raw === '') return undefined;
+    if (raw === 'true' || raw === true) return true;
+    if (raw === 'false' || raw === false) return false;
+    return undefined;
+};
+
 const getProducts = async (req, res) => {
     try {
-        if (req.query.page || req.query.limit || req.query.search || req.query.category || req.query.brand) {
+        const activeFilter = parseActiveQuery(req.query.active);
+
+        if (
+            req.query.page ||
+            req.query.limit ||
+            req.query.search ||
+            req.query.category ||
+            req.query.brand ||
+            activeFilter !== undefined
+        ) {
             const {page, limit, skip} = getPaginationParams(req.query);
 
             const result = await productService.getProductsPaginated({
@@ -28,6 +44,7 @@ const getProducts = async (req, res) => {
                 category: req.query.category,
                 brand: req.query.brand,
                 search: req.query.search,
+                active: activeFilter,
             });
 
             return res.status(200).json(
@@ -92,12 +109,31 @@ const deleteProduct = async (req, res) => {
     }
 };
 
+const updateProductStatus = async (req, res) => {
+    try {
+        const product = await productService.setProductActive(
+            req.params.productId,
+            req.body.active
+        );
+
+        return res.status(200).json({
+            message: product.active
+                ? 'Product activated successfully'
+                : 'Product deactivated successfully',
+            product: convertToProductResponse(product),
+        });
+    } catch (error) {
+        return handleControllerError(res, error, 'Error updating product status');
+    }
+};
+
 const convertToProductResponse = (product, inventory = undefined) => ({
     productId: product.productId,
     name: product.name,
     description: product.description,
     category: product.category ? convertToCategoryResponse(product.category) : null,
     brand: product.brand ? convertToBrandResponse(product.brand) : null,
+    active: product.active,
     ...(inventory !== undefined ? {inventory} : {}),
 });
 
@@ -115,5 +151,6 @@ module.exports = {
     getProductById,
     updateProduct,
     deleteProduct,
+    updateProductStatus,
     convertToProductResponse,
 };

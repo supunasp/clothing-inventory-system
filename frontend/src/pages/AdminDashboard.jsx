@@ -37,6 +37,7 @@ const AdminDashboard = () => {
     const [products, setProducts] = useState([]);
     const [productPagination, setProductPagination] = useState(null);
     const [productPage, setProductPage] = useState(1);
+    const [statusTogglingId, setStatusTogglingId] = useState(null);
 
     const {categories: filterCategories, brands: filterBrands, reload: reloadReferenceData} = useReferenceData();
 
@@ -88,6 +89,25 @@ const AdminDashboard = () => {
     useEffect(() => {
         loadProducts();
     }, [loadProducts]);
+
+    const handleToggleStatus = async (product) => {
+        setStatusTogglingId(product.productId);
+        setErrorMessage("");
+
+        try {
+            await axiosInstance.patch(
+                `/api/products/${encodeURIComponent(product.productId)}/status`,
+                { active: !product.active }
+            );
+            await Promise.all([loadProducts(), loadAnalytics()]);
+        } catch (error) {
+            setErrorMessage(
+                error.response?.data?.message || "Unable to update product status."
+            );
+        } finally {
+            setStatusTogglingId(null);
+        }
+    };
 
     const handleEntityChange = useCallback(() => {
         reloadReferenceData();
@@ -165,20 +185,21 @@ const AdminDashboard = () => {
                             <th className="px-5 py-3 font-medium">Category</th>
                             <th className="px-5 py-3 font-medium">Brand</th>
                             <th className="px-5 py-3 font-medium">Inventory</th>
-                            <th className="px-5 py-3 font-medium"></th>
+                            <th className="px-5 py-3 font-medium">Status</th>
+                            <th className="px-5 py-3 font-medium text-right">Actions</th>
                         </tr>
                         </thead>
 
                         <tbody>
                         {isLoading ? (
                             <tr>
-                                <td colSpan="6" className="px-5 py-8 text-center text-gray-500">
+                                <td colSpan="7" className="px-5 py-8 text-center text-gray-500">
                                     Loading products...
                                 </td>
                             </tr>
                         ) : products.length === 0 ? (
                             <tr>
-                                <td colSpan="6" className="px-5 py-8 text-center text-gray-500">
+                                <td colSpan="7" className="px-5 py-8 text-center text-gray-500">
                                     No products found.
                                 </td>
                             </tr>
@@ -201,13 +222,42 @@ const AdminDashboard = () => {
                                         {product.inventory ?? 0}
                                     </td>
                                     <td className="px-5 py-4">
-                                        <button
-                                            type="button"
-                                            onClick={() => navigate("/inventory/add", {state: {product}})}
-                                            className="rounded-md bg-blue-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-600"
+                                        <span
+                                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                                                product.active
+                                                    ? "bg-emerald-50 text-emerald-700"
+                                                    : "bg-red-50 text-red-700"
+                                            }`}
                                         >
-                                            Details
-                                        </button>
+                                            {product.active ? "Active" : "Inactive"}
+                                        </span>
+                                    </td>
+                                    <td className="px-5 py-4">
+                                        <div className="flex justify-end gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleToggleStatus(product)}
+                                                disabled={statusTogglingId === product.productId}
+                                                className={`rounded-md px-3 py-1.5 text-xs font-medium text-white disabled:cursor-not-allowed disabled:opacity-50 ${
+                                                    product.active
+                                                        ? "bg-amber-500 hover:bg-amber-600"
+                                                        : "bg-emerald-600 hover:bg-emerald-700"
+                                                }`}
+                                            >
+                                                {statusTogglingId === product.productId
+                                                    ? "..."
+                                                    : product.active
+                                                    ? "Deactivate"
+                                                    : "Activate"}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => navigate(`/admin/products/${encodeURIComponent(product.productId)}`, {state: {product}})}
+                                                className="rounded-md bg-blue-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-600"
+                                            >
+                                                Details
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))

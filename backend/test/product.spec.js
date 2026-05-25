@@ -5,7 +5,7 @@ const Product = require('../models/Product');
 const ProductCategory = require('../models/ProductCategory');
 const ProductBrand = require('../models/ProductBrand');
 const ProductVariant = require('../models/ProductVariant');
-const { createStaffUser, authHeader } = require('./helpers/auth');
+const { createStaffUser, createAdminUser, authHeader } = require('./helpers/auth');
 
 chai.use(chaiHttp);
 const { expect } = chai;
@@ -173,6 +173,7 @@ describe('Product endpoints', () => {
 
             expect(res).to.have.status(200);
             expect(res.body.productId).to.equal('GET-1');
+            expect(res.body.active).to.equal(true);
         });
 
         it('returns 404 when missing', async () => {
@@ -182,6 +183,137 @@ describe('Product endpoints', () => {
                 .set(headers);
 
             expect(res).to.have.status(404);
+        });
+    });
+
+    describe('PATCH /api/products/:productId/status', () => {
+        const seedProduct = async (overrides = {}) => {
+            const { category, brand } = await seedCategoryBrand();
+            return Product.create({
+                productId: 'STATUS-1',
+                name: 'Item',
+                category: category._id,
+                brand: brand._id,
+                ...overrides,
+            });
+        };
+
+        it('admin can deactivate and reactivate a product', async () => {
+            const admin = await createAdminUser();
+            const adminHeaders = authHeader(admin);
+            await seedProduct();
+
+            const deactivate = await chai
+                .request(app)
+                .patch('/api/products/STATUS-1/status')
+                .set(adminHeaders)
+                .send({ active: false });
+
+            expect(deactivate).to.have.status(200);
+            expect(deactivate.body.product.active).to.equal(false);
+            expect(deactivate.body.message).to.match(/deactivated/i);
+
+            const reactivate = await chai
+                .request(app)
+                .patch('/api/products/STATUS-1/status')
+                .set(adminHeaders)
+                .send({ active: true });
+
+            expect(reactivate).to.have.status(200);
+            expect(reactivate.body.product.active).to.equal(true);
+            expect(reactivate.body.message).to.match(/activated/i);
+        });
+
+        it('blocks staff from changing status', async () => {
+            await seedProduct();
+
+            const res = await chai
+                .request(app)
+                .patch('/api/products/STATUS-1/status')
+                .set(headers)
+                .send({ active: false });
+
+            expect(res).to.have.status(403);
+        });
+
+        it('rejects non-boolean active value', async () => {
+            const admin = await createAdminUser();
+            await seedProduct();
+
+            const res = await chai
+                .request(app)
+                .patch('/api/products/STATUS-1/status')
+                .set(authHeader(admin))
+                .send({ active: 'maybe' });
+
+            expect(res).to.have.status(400);
+        });
+
+        it('returns 404 for missing product', async () => {
+            const admin = await createAdminUser();
+
+            const res = await chai
+                .request(app)
+                .patch('/api/products/MISSING/status')
+                .set(authHeader(admin))
+                .send({ active: false });
+
+            expect(res).to.have.status(404);
+        });
+    });
+
+    describe('GET /api/products?active filter', () => {
+        it('filters out inactive products when active=true', async () => {
+            const { category, brand } = await seedCategoryBrand();
+            await Product.create({
+                productId: 'A-ON',
+                name: 'Active item',
+                category: category._id,
+                brand: brand._id,
+                active: true,
+            });
+            await Product.create({
+                productId: 'A-OFF',
+                name: 'Inactive item',
+                category: category._id,
+                brand: brand._id,
+                active: false,
+            });
+
+            const res = await chai
+                .request(app)
+                .get('/api/products?page=1&limit=10&active=true')
+                .set(headers);
+
+            expect(res).to.have.status(200);
+            expect(res.body.data).to.have.length(1);
+            expect(res.body.data[0].productId).to.equal('A-ON');
+        });
+
+        it('returns all when active param omitted', async () => {
+            const { category, brand } = await seedCategoryBrand();
+            await Product.create({
+                productId: 'B-ON',
+                name: 'A',
+                category: category._id,
+                brand: brand._id,
+                active: true,
+            });
+            await Product.create({
+                productId: 'B-OFF',
+                name: 'B',
+                category: category._id,
+                brand: brand._id,
+                active: false,
+            });
+
+            const res = await chai
+                .request(app)
+                .get('/api/products?page=1&limit=10')
+                .set(headers);
+
+            expect(res).to.have.status(200);
+            expect(res.body.data).to.have.length(2);
         });
     });
 });

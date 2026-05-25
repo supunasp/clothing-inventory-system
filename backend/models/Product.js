@@ -28,6 +28,10 @@ const productSchema = new mongoose.Schema(
             ref: 'ProductBrand',
             required: [true, 'Product brand is required'],
         },
+        active: {
+            type: Boolean,
+            default: true,
+        },
     },
     {
         timestamps: true,

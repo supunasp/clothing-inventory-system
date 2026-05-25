@@ -204,6 +204,12 @@ const deleteProductVariant = async (sku) => {
     return deletedProductVariant;
 };
 
+const findVariantIdsByProductId = async (productId) => {
+    const product = await productService.findProductDocumentByProductId(productId);
+    const variants = await ProductVariant.find({product: product._id}).select('_id');
+    return variants.map((variant) => variant._id);
+};
+
 const aggregateInventoryByProductIds = async (productObjectIds) => {
     const summary = await ProductVariant.aggregate([
         {$match: {product: {$in: productObjectIds}}},
@@ -229,4 +235,5 @@ Object.assign(module.exports, {
     adjustInventory,
     deleteProductVariant,
     aggregateInventoryByProductIds,
+    findVariantIdsByProductId,
 });

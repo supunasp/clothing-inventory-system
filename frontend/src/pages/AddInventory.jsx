@@ -49,6 +49,7 @@ const AddInventory = () => {
                     limit: PRODUCT_LOOKUP_LIMIT,
                     category: selectedCategoryId,
                     brand: selectedBrandId,
+                    active: true,
                 },
             });
 

@@ -25,15 +25,21 @@ const createAudit = async ({
     });
 };
 
-const getAuditsPaginated = async ({limit, skip}) => {
+const getAuditsPaginated = async ({limit, skip, variantIds}) => {
+    const filter = {};
+
+    if (variantIds !== undefined) {
+        filter.productVariant = {$in: variantIds};
+    }
+
     const [audits, totalItems] = await Promise.all([
-        InventoryAudit.find()
+        InventoryAudit.find(filter)
             .sort({createdAt: -1})
             .skip(skip)
             .limit(limit)
             .populate({path: 'productVariant', populate: {path: 'product'}})
             .populate('updatedBy', 'firstName lastName email'),
-        InventoryAudit.countDocuments(),
+        InventoryAudit.countDocuments(filter),
     ]);
 
     return {audits, totalItems};

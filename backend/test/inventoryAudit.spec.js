@@ -84,6 +84,70 @@ describe('InventoryAudit endpoints', () => {
             });
         });
 
+        it('filters by productId', async () => {
+            const category = await ProductCategory.create({ categoryId: 'F-C', categoryName: 'Shirts' });
+            const brand = await ProductBrand.create({ brandId: 'F-B', brandName: 'Nike' });
+
+            const productA = await Product.create({
+                productId: 'F-A',
+                name: 'A',
+                category: category._id,
+                brand: brand._id,
+            });
+            const productB = await Product.create({
+                productId: 'F-B-Prod',
+                name: 'B',
+                category: category._id,
+                brand: brand._id,
+            });
+
+            const variantA = await ProductVariant.create({
+                sku: 'F-A#Blue#M',
+                product: productA._id,
+                color: 'Blue',
+                size: 'M',
+                stockAmount: 5,
+            });
+            const variantB = await ProductVariant.create({
+                sku: 'F-B-Prod#Red#L',
+                product: productB._id,
+                color: 'Red',
+                size: 'L',
+                stockAmount: 3,
+            });
+
+            await InventoryAudit.create({
+                productVariant: variantA._id,
+                sku: variantA.sku,
+                type: 'increase',
+                amount: 5,
+                quantityBefore: 0,
+                quantityAfter: 5,
+                reference: 'A-REF',
+                updatedBy: user._id,
+            });
+
+            await InventoryAudit.create({
+                productVariant: variantB._id,
+                sku: variantB.sku,
+                type: 'increase',
+                amount: 3,
+                quantityBefore: 0,
+                quantityAfter: 3,
+                reference: 'B-REF',
+                updatedBy: user._id,
+            });
+
+            const res = await chai
+                .request(app)
+                .get('/api/inventory-audits?page=1&limit=10&productId=F-A')
+                .set(headers);
+
+            expect(res).to.have.status(200);
+            expect(res.body.data).to.have.length(1);
+            expect(res.body.data[0].reference).to.equal('A-REF');
+        });
+
         it('orders newest first', async () => {
             const category = await ProductCategory.create({ categoryId: 'C2', categoryName: 'Shirts' });
             const brand = await ProductBrand.create({ brandId: 'B2', brandName: 'Nike' });

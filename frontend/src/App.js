@@ -10,6 +10,7 @@ import AddCategory from './pages/AddCategory';
 import AddBrand from './pages/AddBrand';
 import UserManagement from "./pages/UserManagement";
 import InventoryAuditList from "./pages/InventoryAuditList";
+import AdminProductDetails from "./pages/AdminProductDetails";
 import AppLayout from './components/layout/AppLayout';
 import {useAuth} from './context/AuthContext';
 import {ROLE_ADMIN} from './constants';
@@ -120,6 +121,15 @@ function App() {
                     element={
                         <ProtectedLayout adminOnly>
                             <InventoryAuditList/>
+                        </ProtectedLayout>
+                    }
+                />
+
+                <Route
+                    path="/admin/products/:productId"
+                    element={
+                        <ProtectedLayout adminOnly>
+                            <AdminProductDetails/>
                         </ProtectedLayout>
                     }
                 />

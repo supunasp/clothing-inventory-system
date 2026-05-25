@@ -1,4 +1,5 @@
 const inventoryAuditService = require('../services/inventoryAuditService');
+const productVariantService = require('../services/productVariantService');
 const {getPaginationParams, buildPaginationResponse} = require('../utils/pagination');
 const logger = require('../utils/logger');
 
@@ -6,9 +7,17 @@ const getAudits = async (req, res) => {
     try {
         const {page, limit, skip} = getPaginationParams(req.query);
 
+        let variantIds;
+        if (req.query.productId) {
+            variantIds = await productVariantService.findVariantIdsByProductId(
+                req.query.productId
+            );
+        }
+
         const {audits, totalItems} = await inventoryAuditService.getAuditsPaginated({
             limit,
             skip,
+            variantIds,
         });
 
         return res.status(200).json(

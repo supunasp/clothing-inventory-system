@@ -45,6 +45,7 @@ const ProductDashboard = () => {
                     limit: PAGE_SIZE,
                     category: selectedCategory || undefined,
                     brand: selectedBrand || undefined,
+                    active: true,
                 },
             });
 

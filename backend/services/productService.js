@@ -39,7 +39,7 @@ const getProducts = async () => {
         .sort({createdAt: -1});
 };
 
-const getProductsPaginated = async ({limit, skip, category, brand, search}) => {
+const getProductsPaginated = async ({limit, skip, category, brand, search, active}) => {
     const filter = {};
 
     if (search) {
@@ -48,6 +48,10 @@ const getProductsPaginated = async ({limit, skip, category, brand, search}) => {
             {name: {$regex: search, $options: 'i'}},
             {description: {$regex: search, $options: 'i'}},
         ];
+    }
+
+    if (active !== undefined) {
+        filter.active = active;
     }
 
     const query = Product.find(filter)
@@ -160,6 +164,30 @@ const findProductDocumentByProductId = async (productId) => {
     return product;
 };
 
+const setProductActive = async (productId, active) => {
+    if (typeof active !== 'boolean') {
+        const error = new Error('active must be a boolean value');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const updated = await Product.findOneAndUpdate(
+        {productId},
+        {active},
+        {new: true, runValidators: true}
+    )
+        .populate('category')
+        .populate('brand');
+
+    if (!updated) {
+        const error = new Error('Product not found');
+        error.statusCode = 404;
+        throw error;
+    }
+
+    return updated;
+};
+
 const countProductsByBrand = async (brandObjectId) => {
     return Product.countDocuments({brand: brandObjectId});
 };
@@ -178,4 +206,5 @@ Object.assign(module.exports, {
     findProductDocumentByProductId,
     countProductsByBrand,
     countProductsByCategory,
+    setProductActive,
 });
