@@ -1,8 +1,6 @@
 const ProductVariant = require('../models/ProductVariant');
-const InventoryAudit = require('../models/InventoryAudit');
-const {
-    findProductDocumentByProductId,
-} = require('./productService');
+const inventoryAuditService = require('./inventoryAuditService');
+const productService = require('./productService');
 
 const createProductVariant = async ({productId, color, size, stockAmount, reference, userId}) => {
     if (!productId || !color || !size || !stockAmount) {
@@ -17,7 +15,7 @@ const createProductVariant = async ({productId, color, size, stockAmount, refere
         throw error;
     }
 
-    const existingProduct = await findProductDocumentByProductId(productId);
+    const existingProduct = await productService.findProductDocumentByProductId(productId);
 
     if (!existingProduct) {
         const error = new Error('productId does not exist');
@@ -46,7 +44,7 @@ const createProductVariant = async ({productId, color, size, stockAmount, refere
         stockAmount: stockAmount,
     });
 
-    await InventoryAudit.create({
+    await inventoryAuditService.createAudit({
         productVariant: productVariant._id,
         sku: productVariant.sku,
         type: 'increase',
@@ -64,7 +62,7 @@ const getProductVariants = async ({productId} = {}) => {
     const filter = {};
 
     if (productId) {
-        const existingProduct = await findProductDocumentByProductId(productId);
+        const existingProduct = await productService.findProductDocumentByProductId(productId);
         filter.product = existingProduct._id;
     }
 
@@ -89,7 +87,7 @@ const getProductVariantsById = async (sku) => {
 
 const getProductVariantsByProductId = async (productId) => {
 
-    const existingProduct = await findProductDocumentByProductId(productId);
+    const existingProduct = await productService.findProductDocumentByProductId(productId);
 
     if (!existingProduct) {
         const error = new Error('productId does not exist');
@@ -178,7 +176,7 @@ const adjustInventory = async (sku, {type, amount, reference, userId}) => {
         {new: true, runValidators: true}
     ).populate('product');
 
-    await InventoryAudit.create({
+    await inventoryAuditService.createAudit({
         productVariant: updatedVariant._id,
         sku: updatedVariant.sku,
         type,
@@ -206,11 +204,23 @@ const deleteProductVariant = async (sku) => {
     return deletedProductVariant;
 };
 
+const aggregateInventoryByProductIds = async (productObjectIds) => {
+    const summary = await ProductVariant.aggregate([
+        {$match: {product: {$in: productObjectIds}}},
+        {$group: {_id: '$product', inventory: {$sum: '$stockAmount'}}},
+    ]);
+
+    return summary.reduce((map, item) => {
+        map[item._id.toString()] = item.inventory;
+        return map;
+    }, {});
+};
+
 function getSkuValue(productId, color, size) {
     return productId + "#" + color.trim() + "#" + size.trim();
 }
 
-module.exports = {
+Object.assign(module.exports, {
     createProductVariant,
     getProductVariants,
     getProductVariantsById,
@@ -218,4 +228,5 @@ module.exports = {
     updateProductVariantStocks,
     adjustInventory,
     deleteProductVariant,
-};
+    aggregateInventoryByProductIds,
+});

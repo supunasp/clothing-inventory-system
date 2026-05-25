@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import axiosInstance from "../../axiosConfig";
 import ConfirmationModal from "../common/ConfirmationModal";
+import Pagination from "../common/Pagination";
+import ProductFilters from "../common/ProductFilters";
+import useReferenceData from "../../hooks/useReferenceData";
 
 const PAGE_SIZE = 10;
 
@@ -13,8 +16,7 @@ const ProductDashboard = () => {
     const [products, setProducts] = useState([]);
     const [pagination, setPagination] = useState(null);
     const [page, setPage] = useState(1);
-    const [categories, setCategories] = useState([]);
-    const [brands, setBrands] = useState([]);
+    const { categories, brands } = useReferenceData();
     const [selectedCategory, setSelectedCategory] = useState("");
     const [selectedBrand, setSelectedBrand] = useState("");
     const [isLoadingProducts, setIsLoadingProducts] = useState(false);
@@ -61,34 +63,6 @@ const ProductDashboard = () => {
     useEffect(() => {
         loadProducts();
     }, [loadProducts]);
-
-    useEffect(() => {
-        const loadFilters = async () => {
-            try {
-                const [categoriesResponse, brandsResponse] = await Promise.all([
-                    axiosInstance.get("/api/categories"),
-                    axiosInstance.get("/api/brands"),
-                ]);
-
-                setCategories(
-                    categoriesResponse.data.data ||
-                        categoriesResponse.data.categories ||
-                        categoriesResponse.data ||
-                        []
-                );
-                setBrands(
-                    brandsResponse.data.data ||
-                        brandsResponse.data.brands ||
-                        brandsResponse.data ||
-                        []
-                );
-            } catch (error) {
-                // Filters are optional — failing silently is fine.
-            }
-        };
-
-        loadFilters();
-    }, []);
 
     const loadVariants = useCallback(async (productId) => {
         setIsLoadingVariants(true);
@@ -222,37 +196,14 @@ const ProductDashboard = () => {
             <div className="rounded-xl bg-white border border-gray-100 shadow-sm">
                 <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
                     <div className="flex flex-wrap gap-6">
-                        <label className="flex items-center gap-3 text-xs text-gray-600">
-                            Category
-                            <select
-                                value={selectedCategory}
-                                onChange={handleCategoryFilterChange}
-                                className="h-9 w-40 rounded-md border border-gray-300 bg-white px-3 text-xs outline-none focus:border-blue-500"
-                            >
-                                <option value="">All</option>
-                                {categories.map((category) => (
-                                    <option key={category.categoryId} value={category.categoryId}>
-                                        {category.categoryName}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-
-                        <label className="flex items-center gap-3 text-xs text-gray-600">
-                            Brand
-                            <select
-                                value={selectedBrand}
-                                onChange={handleBrandFilterChange}
-                                className="h-9 w-40 rounded-md border border-gray-300 bg-white px-3 text-xs outline-none focus:border-blue-500"
-                            >
-                                <option value="">All</option>
-                                {brands.map((brand) => (
-                                    <option key={brand.brandId} value={brand.brandId}>
-                                        {brand.brandName}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
+                        <ProductFilters
+                            categories={categories}
+                            brands={brands}
+                            selectedCategory={selectedCategory}
+                            selectedBrand={selectedBrand}
+                            onCategoryChange={handleCategoryFilterChange}
+                            onBrandChange={handleBrandFilterChange}
+                        />
                     </div>
 
                     <button
@@ -329,27 +280,7 @@ const ProductDashboard = () => {
                     </table>
                 </div>
 
-                <div className="flex items-center justify-center gap-5 px-5 py-4 text-xs text-gray-600">
-                    <button
-                        type="button"
-                        disabled={!pagination?.hasPreviousPage}
-                        onClick={() => setPage((current) => Math.max(current - 1, 1))}
-                        className="rounded-md border border-gray-200 px-3 py-1.5 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        ← Previous
-                    </button>
-                    <span>
-                        Page {pagination?.page ?? 1} of {pagination?.totalPages ?? 1}
-                    </span>
-                    <button
-                        type="button"
-                        disabled={!pagination?.hasNextPage}
-                        onClick={() => setPage((current) => current + 1)}
-                        className="rounded-md border border-gray-200 px-3 py-1.5 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        Next →
-                    </button>
-                </div>
+                <Pagination pagination={pagination} onPageChange={setPage} />
             </div>
 
             {selectedProduct && (
@@ -499,7 +430,7 @@ const ProductDashboard = () => {
                 {inventoryAction?.type === "increase" ? "add" : "remove"}{" "}
                 {inventoryAction?.amount} units{" "}
                 {inventoryAction?.type === "increase" ? "to" : "from"}{" "}
-                {inventoryAction?.variant.color} {inventoryAction?.variant.size} variant?
+                {inventoryAction?.variant?.color} {inventoryAction?.variant?.size} variant?
             </ConfirmationModal>
         </>
     );

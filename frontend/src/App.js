@@ -8,6 +8,7 @@ import AddInventory from './components/products/AddInventory';
 import AddCategory from './components/products/AddCategory';
 import AddBrand from './components/products/AddBrand';
 import UserManagement from "./components/products/UserManagement";
+import InventoryAuditList from "./components/products/InventoryAuditList";
 import AppLayout from './components/layout/AppLayout';
 import {useAuth} from './context/AuthContext';
 
@@ -102,6 +103,15 @@ function App() {
                     element={
                         <ProtectedLayout>
                             <UserManagement/>
+                        </ProtectedLayout>
+                    }
+                />
+
+                <Route
+                    path="/admin/inventory"
+                    element={
+                        <ProtectedLayout>
+                            <InventoryAuditList/>
                         </ProtectedLayout>
                     }
                 />

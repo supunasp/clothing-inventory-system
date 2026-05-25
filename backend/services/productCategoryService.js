@@ -1,4 +1,17 @@
 const ProductCategory = require('../models/ProductCategory');
+const productService = require('./productService');
+
+const assertCategoryUnreferenced = async (category, action) => {
+    const productCount = await productService.countProductsByCategory(category._id);
+
+    if (productCount > 0) {
+        const error = new Error(
+            `Cannot ${action} category "${category.categoryName}": ${productCount} product(s) reference it.`
+        );
+        error.statusCode = 409;
+        throw error;
+    }
+};
 
 const createCategory = async ({categoryId, categoryName}) => {
     if (!categoryId || !categoryName) {
@@ -68,6 +81,16 @@ const updateCategory = async (categoryId, {categoryName}) => {
         throw error;
     }
 
+    const existingCategory = await ProductCategory.findOne({categoryId});
+
+    if (!existingCategory) {
+        const error = new Error('ProductCategory not found');
+        error.statusCode = 404;
+        throw error;
+    }
+
+    await assertCategoryUnreferenced(existingCategory, 'edit');
+
     const updatedCategory = await ProductCategory.findOneAndUpdate(
         {categoryId},
         {categoryName},
@@ -77,25 +100,21 @@ const updateCategory = async (categoryId, {categoryName}) => {
         }
     );
 
-    if (!updatedCategory) {
-        const error = new Error('ProductCategory not found');
-        error.statusCode = 404;
-        throw error;
-    }
-
     return updatedCategory;
 };
 
 const deleteCategory = async (categoryId) => {
-    const deletedCategory = await ProductCategory.findOneAndDelete({categoryId});
+    const existingCategory = await ProductCategory.findOne({categoryId});
 
-    if (!deletedCategory) {
+    if (!existingCategory) {
         const error = new Error('ProductCategory not found');
         error.statusCode = 404;
         throw error;
     }
 
-    return deletedCategory;
+    await assertCategoryUnreferenced(existingCategory, 'delete');
+
+    return ProductCategory.findOneAndDelete({categoryId});
 };
 
 const findCategoryDocumentByCategoryId = async (categoryId) => {
@@ -110,7 +129,7 @@ const findCategoryDocumentByCategoryId = async (categoryId) => {
     return category;
 };
 
-module.exports = {
+Object.assign(module.exports, {
     createCategory,
     getCategories,
     getCategoriesPaginated,
@@ -118,4 +137,4 @@ module.exports = {
     updateCategory,
     deleteCategory,
     findCategoryDocumentByCategoryId,
-};
+});
