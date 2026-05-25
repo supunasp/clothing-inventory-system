@@ -37,11 +37,10 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center px-4 py-10">
-      <img src={logo} alt="Clothing Inventory System" className="w-96 mb-8" />
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center px-4 py-6">
+      <img src={logo} alt="Clothing Inventory System" className="w-72 mb-6" />
 
-      <div className="w-full max-w-4xl min-h-[560px] bg-white border
-      border-gray-300 rounded shadow-sm flex justify-center items-start pt-24 pb-12">
+      <div className="w-full max-w-4xl bg-white border border-gray-300 rounded shadow-sm flex justify-center items-start py-10">
         <form onSubmit={handleSubmit} className="w-full max-w-xl">
           <h1 className="text-3xl font-bold text-gray-900">Log In</h1>
           <p className="text-sm text-gray-500 mb-8">Welcome Back!</p>
@@ -71,7 +70,7 @@ const Login = () => {
             />
           </div>
 
-          <div className="mb-3 relative">
+          <div className="mb-8 relative">
             <LockKeyhole
               size={18}
               strokeWidth={1.8}
@@ -100,12 +99,6 @@ const Login = () => {
               ) : (
                 <Eye size={18} strokeWidth={1.8} />
               )}
-            </button>
-          </div>
-
-          <div className="mb-8">
-            <button type="button" className="text-xs text-gray-400 hover:text-blue-600">
-              Forgot Password?
             </button>
           </div>
 

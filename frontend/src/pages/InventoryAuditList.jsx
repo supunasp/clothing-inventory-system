@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import axiosInstance from "../../axiosConfig";
-import Pagination from "../common/Pagination";
+import axiosInstance from "../axiosConfig";
+import Pagination from "../components/common/Pagination";
 
 const PAGE_SIZE = 10;
 

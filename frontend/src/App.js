@@ -1,14 +1,15 @@
 import {BrowserRouter as Router, Routes, Route, Navigate} from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Terms from './pages/Terms';
 import Profile from './pages/Profile';
 import LandingPage from './pages/LandingPage';
-import CreateProduct from './components/products/CreateProduct';
-import AddInventory from './components/products/AddInventory';
-import AddCategory from './components/products/AddCategory';
-import AddBrand from './components/products/AddBrand';
-import UserManagement from "./components/products/UserManagement";
-import InventoryAuditList from "./components/products/InventoryAuditList";
+import CreateProduct from './pages/CreateProduct';
+import AddInventory from './pages/AddInventory';
+import AddCategory from './pages/AddCategory';
+import AddBrand from './pages/AddBrand';
+import UserManagement from "./pages/UserManagement";
+import InventoryAuditList from "./pages/InventoryAuditList";
 import AppLayout from './components/layout/AppLayout';
 import {useAuth} from './context/AuthContext';
 
@@ -52,6 +53,8 @@ function App() {
                     path="/register"
                     element={user ? <Navigate to="/dashboard" replace/> : <Register/>}
                 />
+
+                <Route path="/terms" element={<Terms/>}/>
 
                 <Route
                     path="/dashboard"

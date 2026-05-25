@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axiosInstance from "../../axiosConfig";
-import ConfirmationModal from "../common/ConfirmationModal";
-import PageHeader from "../common/PageHeader";
-import useReferenceData from "../../hooks/useReferenceData";
+import axiosInstance from "../axiosConfig";
+import ConfirmationModal from "../components/common/ConfirmationModal";
+import PageHeader from "../components/common/PageHeader";
+import useReferenceData from "../hooks/useReferenceData";
 
 const PRODUCT_LOOKUP_LIMIT = 200;
 

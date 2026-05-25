@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import axiosInstance from "../../axiosConfig";
-import ConfirmationModal from "../common/ConfirmationModal";
-import Pagination from "../common/Pagination";
-import ProductFilters from "../common/ProductFilters";
-import useReferenceData from "../../hooks/useReferenceData";
+import { useAuth } from "../context/AuthContext";
+import axiosInstance from "../axiosConfig";
+import ConfirmationModal from "../components/common/ConfirmationModal";
+import Pagination from "../components/common/Pagination";
+import ProductFilters from "../components/common/ProductFilters";
+import useReferenceData from "../hooks/useReferenceData";
 
 const PAGE_SIZE = 10;
 

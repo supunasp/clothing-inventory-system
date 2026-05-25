@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../../axiosConfig";
-import ConfirmationModal from "../common/ConfirmationModal";
-import EntityManagementList from "../common/EntityManagementList";
-import PageHeader from "../common/PageHeader";
+import axiosInstance from "../axiosConfig";
+import ConfirmationModal from "../components/common/ConfirmationModal";
+import EntityManagementList from "../components/common/EntityManagementList";
+import PageHeader from "../components/common/PageHeader";
 
 const AddCategory = () => {
     const navigate = useNavigate();

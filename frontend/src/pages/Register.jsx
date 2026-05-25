@@ -58,11 +58,11 @@ const Register = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 flex flex-col items-center px-4 py-10">
-            <img src={logo} alt="Clothing Inventory System" className="w-72 mb-8"/>
+        <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center px-4 py-6">
+            <img src={logo} alt="Clothing Inventory System" className="w-72 mb-6"/>
 
             <div
-                className="w-full max-w-4xl min-h-[560px] bg-white border border-gray-300 rounded shadow-sm flex justify-center items-start pt-14">
+                className="w-full max-w-4xl bg-white border border-gray-300 rounded shadow-sm flex justify-center items-start py-10">
                 <form onSubmit={handleSubmit} className="w-full max-w-2xl">
                     <h1 className="text-3xl font-bold text-gray-900">Register Account</h1>
                     <p className="text-sm text-gray-500 mb-8">Join Clothing Inventory System</p>
@@ -185,9 +185,15 @@ const Register = () => {
 
                         <span>
                             I agree to the{' '}
-                            <span className="text-blue-700 font-semibold">
+                            <Link
+                                to="/terms"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-700 font-semibold hover:underline"
+                                onClick={(e) => e.stopPropagation()}
+                            >
                                 Terms &amp; Privacy Policy
-                            </span>
+                            </Link>
                         </span>
                     </label>
 

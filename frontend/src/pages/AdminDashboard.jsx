@@ -1,12 +1,12 @@
 import {useCallback, useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {Award, LayoutGrid, Tag, Users} from "lucide-react";
-import {useAuth} from "../../context/AuthContext";
-import axiosInstance from "../../axiosConfig";
-import EntityManagementList from "../common/EntityManagementList";
-import Pagination from "../common/Pagination";
-import ProductFilters from "../common/ProductFilters";
-import useReferenceData from "../../hooks/useReferenceData";
+import {useAuth} from "../context/AuthContext";
+import axiosInstance from "../axiosConfig";
+import EntityManagementList from "../components/common/EntityManagementList";
+import Pagination from "../components/common/Pagination";
+import ProductFilters from "../components/common/ProductFilters";
+import useReferenceData from "../hooks/useReferenceData";
 
 const StatCard = ({icon, iconBg = "bg-emerald-50", title, value}) => {
     return (
