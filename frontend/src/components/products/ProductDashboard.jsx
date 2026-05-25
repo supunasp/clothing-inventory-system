@@ -366,12 +366,23 @@ const ProductDashboard = () => {
                             </p>
                         </div>
 
-                        <button
-                            onClick={handleClearSelection}
-                            className="rounded-md border border-gray-300 px-3 py-2 text-xs text-gray-600 hover:bg-white"
-                        >
-                            Clear Selection
-                        </button>
+                        <div className="flex items-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    navigate("/inventory/add", { state: { product: selectedProduct } })
+                                }
+                                className="rounded-md bg-emerald-600 px-4 py-2 text-xs font-medium text-white hover:bg-emerald-700"
+                            >
+                                Update Inventory
+                            </button>
+                            <button
+                                onClick={handleClearSelection}
+                                className="rounded-md border border-gray-300 px-3 py-2 text-xs text-gray-600 hover:bg-white"
+                            >
+                                Clear Selection
+                            </button>
+                        </div>
                     </div>
 
                     {variantsError && (

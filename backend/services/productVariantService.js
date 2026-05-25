@@ -4,9 +4,15 @@ const {
     findProductDocumentByProductId,
 } = require('./productService');
 
-const createProductVariant = async ({productId, color, size, stockAmount}) => {
+const createProductVariant = async ({productId, color, size, stockAmount, reference, userId}) => {
     if (!productId || !color || !size || !stockAmount) {
         const error = new Error('productId, color, size and stockAmount are required');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    if (!reference || !reference.trim()) {
+        const error = new Error('reference is required');
         error.statusCode = 400;
         throw error;
     }
@@ -38,6 +44,17 @@ const createProductVariant = async ({productId, color, size, stockAmount}) => {
         color: color,
         size: size,
         stockAmount: stockAmount,
+    });
+
+    await InventoryAudit.create({
+        productVariant: productVariant._id,
+        sku: productVariant.sku,
+        type: 'increase',
+        amount: stockAmount,
+        quantityBefore: 0,
+        quantityAfter: stockAmount,
+        reference: reference.trim(),
+        updatedBy: userId,
     });
 
     return ProductVariant.findById(productVariant._id).populate('product');
@@ -153,6 +170,7 @@ const adjustInventory = async (sku, {type, amount, reference, userId}) => {
     }
 
     const delta = type === 'increase' ? numericAmount : -numericAmount;
+    const quantityBefore = variant.stockAmount;
 
     const updatedVariant = await ProductVariant.findOneAndUpdate(
         {sku},
@@ -165,8 +183,10 @@ const adjustInventory = async (sku, {type, amount, reference, userId}) => {
         sku: updatedVariant.sku,
         type,
         amount: numericAmount,
+        quantityBefore,
+        quantityAfter: updatedVariant.stockAmount,
         reference: reference.trim(),
-        user: userId,
+        updatedBy: userId,
     });
 
     return updatedVariant;

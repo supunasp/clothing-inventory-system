@@ -3,7 +3,10 @@ const logger = require("../utils/logger");
 
 const createProductVariant = async (req, res) => {
     try {
-        const productVariant = await productVariantService.createProductVariant(req.body);
+        const productVariant = await productVariantService.createProductVariant({
+            ...req.body,
+            userId: req.user ? req.user._id : undefined,
+        });
 
         return res.status(201).json({
             message: 'Product Variant created successfully',

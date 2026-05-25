@@ -22,12 +22,22 @@ const inventoryAuditSchema = new mongoose.Schema(
             required: [true, 'Amount is required'],
             min: [1, 'Amount must be at least 1'],
         },
+        quantityBefore: {
+            type: Number,
+            required: [true, 'quantityBefore is required'],
+            min: [0, 'quantityBefore must be at least 0'],
+        },
+        quantityAfter: {
+            type: Number,
+            required: [true, 'quantityAfter is required'],
+            min: [0, 'quantityAfter must be at least 0'],
+        },
         reference: {
             type: String,
             required: [true, 'Reference is required'],
             trim: true,
         },
-        user: {
+        updatedBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
         },

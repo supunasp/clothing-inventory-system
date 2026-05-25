@@ -54,7 +54,7 @@ const AddInventory = () => {
             }
 
             await axiosInstance.post("/api/products/variants", {
-                product: product._id,
+                productId: product.productId,
                 color: formData.color,
                 size: formData.size,
                 stockAmount: Number(formData.stockAmount),
@@ -95,9 +95,9 @@ const AddInventory = () => {
                 </div>
 
                 <div className="mt-2 flex items-center gap-2 text-xs text-gray-600">
-                    <span>{product?.categoryName || "Category"}</span>
+                    <span>{product?.category?.categoryName || "Category"}</span>
                     <span>›</span>
-                    <span>{product?.brand || "Brand"}</span>
+                    <span>{product?.brand?.brandName || "Brand"}</span>
                     <span>›</span>
                     <span>{product?.name || "Product"}</span>
                 </div>
@@ -205,7 +205,7 @@ const AddInventory = () => {
             <ConfirmationModal
                 isOpen={isConfirmOpen}
                 title="Update Inventory"
-                message={`Are you sure you want to add ${formData.amount || 0} items to this inventory?`}
+                message={`Are you sure you want to add ${formData.stockAmount || 0} items to this inventory?`}
                 confirmText="Update Inventory"
                 isLoading={isUpdating}
                 onConfirm={handleConfirmUpdate}
