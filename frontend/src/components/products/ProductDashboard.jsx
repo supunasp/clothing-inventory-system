@@ -252,7 +252,7 @@ const ProductDashboard = () => {
                                 Product Details
                             </h2>
                             <p className="mt-2 text-xs text-gray-500">
-                                {selectedProduct.category} / {selectedProduct.brand} /{" "}
+                                {selectedProduct.category} › {selectedProduct.brand} ›{" "}
                                 {selectedProduct.name}
                             </p>
                         </div>
