@@ -1,12 +1,13 @@
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
+import {Award, LayoutGrid, Tag, Users} from "lucide-react";
 import {useAuth} from "../../context/AuthContext";
 import axiosInstance from "../../axiosConfig";
 
-const StatCard = ({icon, title, value}) => {
+const StatCard = ({icon, iconBg = "bg-emerald-50", title, value}) => {
     return (
         <div className="flex items-center gap-4 rounded-xl border border-gray-100 bg-white px-5 py-4 shadow-sm">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-lg">
+            <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${iconBg} text-lg`}>
                 {icon}
             </div>
             <div>
@@ -181,10 +182,30 @@ const AdminDashboard = () => {
             )}
 
             <div className="mb-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-                <StatCard icon="▦" title="Total Products" value={analytics.totalProducts}/>
-                <StatCard icon="⊕" title="Total Categories" value={analytics.totalCategories}/>
-                <StatCard icon="Label" title="Total Brands" value={analytics.totalBrands}/>
-                <StatCard icon="♙" title="Total Users" value={analytics.totalUsers}/>
+                <StatCard
+                    icon={<LayoutGrid size={20} className="text-gray-900" fill="currentColor"/>}
+                    iconBg="bg-emerald-50"
+                    title="Total Products"
+                    value={analytics.totalProducts}
+                />
+                <StatCard
+                    icon={<Award size={20} className="text-gray-900"/>}
+                    iconBg="bg-amber-50"
+                    title="Total Categories"
+                    value={analytics.totalCategories}
+                />
+                <StatCard
+                    icon={<Tag size={20} className="text-rose-500"/>}
+                    iconBg="bg-rose-50"
+                    title="Total Brands"
+                    value={analytics.totalBrands}
+                />
+                <StatCard
+                    icon={<Users size={20} className="text-emerald-600"/>}
+                    iconBg="bg-emerald-50"
+                    title="Total Users"
+                    value={analytics.totalUsers}
+                />
             </div>
 
             <section className="rounded-xl border border-gray-100 bg-white shadow-sm">

@@ -1,4 +1,5 @@
 const ProductVariant = require('../models/ProductVariant');
+const InventoryAudit = require('../models/InventoryAudit');
 const {
     findProductDocumentByProductId,
 } = require('./productService');
@@ -42,8 +43,15 @@ const createProductVariant = async ({productId, color, size, stockAmount}) => {
     return ProductVariant.findById(productVariant._id).populate('product');
 };
 
-const getProductVariants = async () => {
-    return ProductVariant.find()
+const getProductVariants = async ({productId} = {}) => {
+    const filter = {};
+
+    if (productId) {
+        const existingProduct = await findProductDocumentByProductId(productId);
+        filter.product = existingProduct._id;
+    }
+
+    return ProductVariant.find(filter)
         .populate('product')
         .sort({createdAt: -1});
 };
@@ -109,6 +117,61 @@ const updateProductVariantStocks = async (sku, {stockAmount}) => {
     return updatedProductVariant;
 };
 
+const adjustInventory = async (sku, {type, amount, reference, userId}) => {
+    if (!type || !['increase', 'decrease'].includes(type)) {
+        const error = new Error('type must be "increase" or "decrease"');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const numericAmount = Number(amount);
+
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+        const error = new Error('amount must be a positive number');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    if (!reference || !reference.trim()) {
+        const error = new Error('reference is required');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const variant = await ProductVariant.findOne({sku});
+
+    if (!variant) {
+        const error = new Error('Product Variant not found');
+        error.statusCode = 404;
+        throw error;
+    }
+
+    if (type === 'decrease' && variant.stockAmount < numericAmount) {
+        const error = new Error('Insufficient stock to decrease');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const delta = type === 'increase' ? numericAmount : -numericAmount;
+
+    const updatedVariant = await ProductVariant.findOneAndUpdate(
+        {sku},
+        {$inc: {stockAmount: delta}},
+        {new: true, runValidators: true}
+    ).populate('product');
+
+    await InventoryAudit.create({
+        productVariant: updatedVariant._id,
+        sku: updatedVariant.sku,
+        type,
+        amount: numericAmount,
+        reference: reference.trim(),
+        user: userId,
+    });
+
+    return updatedVariant;
+};
+
 const deleteProductVariant = async (sku) => {
     const deletedProductVariant = await ProductVariant
         .findOneAndDelete({sku})
@@ -133,5 +196,6 @@ module.exports = {
     getProductVariantsById,
     getProductVariantsByProductId,
     updateProductVariantStocks,
+    adjustInventory,
     deleteProductVariant,
 };

@@ -16,7 +16,9 @@ const createProductVariant = async (req, res) => {
 
 const getProductVariants = async (req, res) => {
     try {
-        const productVariants = await productVariantService.getProductVariants();
+        const productVariants = await productVariantService.getProductVariants({
+            productId: req.query.productId,
+        });
 
         return res.status(200).json(productVariants.map(convertToProductVariantResponse));
     } catch (error) {
@@ -50,6 +52,24 @@ const updateProductVariant = async (req, res) => {
     }
 };
 
+const adjustInventory = async (req, res) => {
+    try {
+        const productVariant = await productVariantService.adjustInventory(req.params.sku, {
+            type: req.body.type,
+            amount: req.body.amount,
+            reference: req.body.reference,
+            userId: req.user ? req.user._id : undefined,
+        });
+
+        return res.status(200).json({
+            message: 'Inventory adjusted successfully',
+            variant: convertToProductVariantResponse(productVariant),
+        });
+    } catch (error) {
+        return handleControllerError(res, error, 'Error adjusting inventory');
+    }
+};
+
 const deleteProductVariant = async (req, res) => {
     try {
         const productVariant = await productVariantService.deleteProductVariant(req.params.sku);
@@ -64,6 +84,7 @@ const deleteProductVariant = async (req, res) => {
 };
 
 const convertToProductVariantResponse = (productVariant) => ({
+    sku: productVariant.sku,
     productId: productVariant.product ? productVariant.product.productId : null,
     color: productVariant.color,
     size: productVariant.size,
@@ -83,6 +104,7 @@ module.exports = {
     getProductVariants,
     getProductVariantById,
     updateProductVariant,
+    adjustInventory,
     deleteProductVariant,
     convertToProductVariantResponse,
 };
