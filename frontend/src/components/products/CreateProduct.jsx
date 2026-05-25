@@ -1,13 +1,14 @@
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import axiosInstance from "../../axiosConfig";
 import ConfirmationModal from "../common/ConfirmationModal";
+import PageHeader from "../common/PageHeader";
+import useReferenceData from "../../hooks/useReferenceData";
 
 const CreateProduct = () => {
     const navigate = useNavigate();
 
-    const [categories, setCategories] = useState([]);
-    const [brands, setBrands] = useState([]);
+    const {categories, brands} = useReferenceData();
     const [createdProduct, setCreatedProduct] = useState(null);
     const [formData, setFormData] = useState({
         productId: "",
@@ -20,24 +21,6 @@ const CreateProduct = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
-
-    useEffect(() => {
-        const fetchFormOptions = async () => {
-            try {
-                const [categoriesResponse, brandsResponse] = await Promise.all([
-                    axiosInstance.get("/api/categories"),
-                    axiosInstance.get("/api/brands"),
-                ]);
-
-                setCategories(categoriesResponse.data.categories || categoriesResponse.data || []);
-                setBrands(brandsResponse.data.brands || brandsResponse.data || []);
-            } catch (error) {
-                setErrorMessage("Unable to load product categories or brands.");
-            }
-        };
-
-        fetchFormOptions();
-    }, []);
 
     const handleChange = (event) => {
         const {name, value} = event.target;
@@ -84,20 +67,7 @@ const CreateProduct = () => {
 
     return (
         <>
-            <div className="mb-5 flex items-center gap-3">
-                <button
-                    type="button"
-                    onClick={() => navigate("/dashboard")}
-                    className="text-xl text-gray-700 hover:text-gray-900"
-                    aria-label="Back to dashboard"
-                >
-                    ←
-                </button>
-
-                <h1 className="text-lg font-semibold text-gray-900">
-                    Add Product
-                </h1>
-            </div>
+            <PageHeader title="Add Product" onBack={() => navigate("/dashboard")} />
 
             <form
                 onSubmit={handleSubmit}

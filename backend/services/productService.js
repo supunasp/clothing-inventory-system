@@ -1,11 +1,7 @@
 const Product = require('../models/Product');
-const ProductVariant = require('../models/ProductVariant');
-const {
-    findCategoryDocumentByCategoryId,
-} = require('./productCategoryService');
-const {
-    findBrandDocumentByBrandId,
-} = require('./productBrandService');
+const productCategoryService = require('./productCategoryService');
+const productBrandService = require('./productBrandService');
+const productVariantService = require('./productVariantService');
 
 const createProduct = async ({productId, name, description, category, brand}) => {
     if (!productId || !name || !category || !brand) {
@@ -22,8 +18,8 @@ const createProduct = async ({productId, name, description, category, brand}) =>
         throw error;
     }
 
-    const existingCategory = await findCategoryDocumentByCategoryId(category);
-    const existingBrand = await findBrandDocumentByBrandId(brand);
+    const existingCategory = await productCategoryService.findCategoryDocumentByCategoryId(category);
+    const existingBrand = await productBrandService.findBrandDocumentByBrandId(brand);
 
     const product = await Product.create({
         productId: productId,
@@ -64,24 +60,7 @@ const getProductsPaginated = async ({limit, skip, category, brand, search}) => {
 
     const productIds = products.map((product) => product._id);
 
-    const inventorySummary = await ProductVariant.aggregate([
-        {
-            $match: {
-                product: {$in: productIds},
-            },
-        },
-        {
-            $group: {
-                _id: '$product',
-                inventory: {$sum: '$stockAmount'},
-            },
-        },
-    ]);
-
-    const inventoryMap = inventorySummary.reduce((map, item) => {
-        map[item._id.toString()] = item.inventory;
-        return map;
-    }, {});
+    const inventoryMap = await productVariantService.aggregateInventoryByProductIds(productIds);
 
     const data = products
         .filter((product) => {
@@ -125,13 +104,13 @@ const updateProduct = async (productId, {name, description, category, brand}) =>
     }
 
     if (category !== undefined) {
-        const existingCategory = await findCategoryDocumentByCategoryId(category);
+        const existingCategory = await productCategoryService.findCategoryDocumentByCategoryId(category);
         updateData.category = existingCategory._id;
     }
 
 
     if (brand !== undefined) {
-        const existingBrand = await findBrandDocumentByBrandId(category);
+        const existingBrand = await productBrandService.findBrandDocumentByBrandId(brand);
         updateData.brand = existingBrand._id;
     }
 
@@ -181,7 +160,15 @@ const findProductDocumentByProductId = async (productId) => {
     return product;
 };
 
-module.exports = {
+const countProductsByBrand = async (brandObjectId) => {
+    return Product.countDocuments({brand: brandObjectId});
+};
+
+const countProductsByCategory = async (categoryObjectId) => {
+    return Product.countDocuments({category: categoryObjectId});
+};
+
+Object.assign(module.exports, {
     createProduct,
     getProducts,
     getProductsPaginated,
@@ -189,4 +176,6 @@ module.exports = {
     updateProduct,
     deleteProduct,
     findProductDocumentByProductId,
-};
+    countProductsByBrand,
+    countProductsByCategory,
+});

@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../axiosConfig";
 import { useAuth } from "../../context/AuthContext";
 import ConfirmationModal from "../common/ConfirmationModal";
+import PageHeader from "../common/PageHeader";
 
 const ROLE_ADMIN = "admin";
 const ROLE_STAFF = "staff";
@@ -64,7 +65,7 @@ const UserManagement = () => {
         action: null,
     });
 
-    const loadUsers = async () => {
+    const loadUsers = useCallback(async () => {
         setIsLoading(true);
         setErrorMessage("");
 
@@ -88,11 +89,11 @@ const UserManagement = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [page, role, active, search]);
 
     useEffect(() => {
         loadUsers();
-    }, [page, role, active]);
+    }, [page, role, active, loadUsers]);
 
     const handleSearchSubmit = (event) => {
         event.preventDefault();
@@ -202,20 +203,7 @@ const UserManagement = () => {
 
     return (
         <>
-            <div className="mb-5 flex items-center gap-3">
-                <button
-                    type="button"
-                    onClick={() => navigate("/dashboard")}
-                    className="text-xl text-gray-700 hover:text-gray-900"
-                    aria-label="Back to dashboard"
-                >
-                    ←
-                </button>
-
-                <h1 className="text-lg font-semibold text-gray-900">
-                    User Management
-                </h1>
-            </div>
+            <PageHeader title="User Management" onBack={() => navigate("/dashboard")} />
 
             {errorMessage && (
                 <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">

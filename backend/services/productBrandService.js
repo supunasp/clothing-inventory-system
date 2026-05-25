@@ -1,5 +1,18 @@
 const ProductBrand = require('../models/ProductBrand');
+const productService = require('./productService');
 require("../models/ProductCategory");
+
+const assertBrandUnreferenced = async (brand, action) => {
+    const productCount = await productService.countProductsByBrand(brand._id);
+
+    if (productCount > 0) {
+        const error = new Error(
+            `Cannot ${action} brand "${brand.brandName}": ${productCount} product(s) reference it.`
+        );
+        error.statusCode = 409;
+        throw error;
+    }
+};
 const createBrand = async ({brandId, brandName}) => {
     if (!brandId || !brandName) {
         const error = new Error('brandId and brandName are required');
@@ -68,6 +81,16 @@ const updateBrand = async (brandId, {brandName}) => {
         throw error;
     }
 
+    const existingBrand = await ProductBrand.findOne({brandId});
+
+    if (!existingBrand) {
+        const error = new Error('ProductBrand not found');
+        error.statusCode = 404;
+        throw error;
+    }
+
+    await assertBrandUnreferenced(existingBrand, 'edit');
+
     const updatedBrand = await ProductBrand.findOneAndUpdate(
         {brandId},
         {brandName},
@@ -77,25 +100,21 @@ const updateBrand = async (brandId, {brandName}) => {
         }
     );
 
-    if (!updatedBrand) {
-        const error = new Error('ProductBrand not found');
-        error.statusCode = 404;
-        throw error;
-    }
-
     return updatedBrand;
 };
 
 const deleteBrand = async (brandId) => {
-    const deletedBrand = await ProductBrand.findOneAndDelete({brandId});
+    const existingBrand = await ProductBrand.findOne({brandId});
 
-    if (!deletedBrand) {
+    if (!existingBrand) {
         const error = new Error('ProductBrand not found');
         error.statusCode = 404;
         throw error;
     }
 
-    return deletedBrand;
+    await assertBrandUnreferenced(existingBrand, 'delete');
+
+    return ProductBrand.findOneAndDelete({brandId});
 };
 
 const findBrandDocumentByBrandId = async (brandId) => {
@@ -110,7 +129,7 @@ const findBrandDocumentByBrandId = async (brandId) => {
     return brand;
 };
 
-module.exports = {
+Object.assign(module.exports, {
     createBrand,
     getBrands,
     getBrandsPaginated,
@@ -118,4 +137,4 @@ module.exports = {
     updateBrand,
     deleteBrand,
     findBrandDocumentByBrandId,
-};
+});

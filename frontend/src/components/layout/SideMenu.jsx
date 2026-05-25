@@ -14,6 +14,7 @@ const SideMenu = () => {
             { label: "Dashboard", path: "/dashboard", activePaths: ["/dashboard"] },
             { label: "Category Management", path: "/admin/categories", activePaths: ["/admin/categories"] },
             { label: "Brand Management", path: "/admin/brands", activePaths: ["/admin/brands"] },
+            { label: "Inventory Management", path: "/admin/inventory", activePaths: ["/admin/inventory"] },
             { label: "User Management", path: "/admin/users", activePaths: ["/admin/users"] },
         ]
         : [

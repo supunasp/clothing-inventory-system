@@ -2,6 +2,8 @@ import {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import axiosInstance from "../../axiosConfig";
 import ConfirmationModal from "../common/ConfirmationModal";
+import EntityManagementList from "../common/EntityManagementList";
+import PageHeader from "../common/PageHeader";
 
 const AddBrand = () => {
     const navigate = useNavigate();
@@ -14,6 +16,7 @@ const AddBrand = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
+    const [listReloadKey, setListReloadKey] = useState(0);
 
     const handleChange = (event) => {
         const {name, value} = event.target;
@@ -50,8 +53,11 @@ const AddBrand = () => {
                 brandName: "",
             });
             setIsConfirmOpen(false);
+            setListReloadKey((current) => current + 1);
         } catch (error) {
-            setErrorMessage("Unable to create brand.");
+            setErrorMessage(
+                error.response?.data?.message || "Unable to create brand."
+            );
         } finally {
             setIsSubmitting(false);
         }
@@ -59,20 +65,7 @@ const AddBrand = () => {
 
     return (
         <>
-            <div className="mb-5 flex items-center gap-3">
-                <button
-                    type="button"
-                    onClick={() => navigate("/dashboard")}
-                    className="text-xl text-gray-700 hover:text-gray-900"
-                    aria-label="Back to dashboard"
-                >
-                    ←
-                </button>
-
-                <h1 className="text-lg font-semibold text-gray-900">
-                    Add Brand
-                </h1>
-            </div>
+            <PageHeader title="Add Brand" onBack={() => navigate("/dashboard")} />
 
             <form
                 onSubmit={handleSubmit}
@@ -139,6 +132,8 @@ const AddBrand = () => {
                     </button>
                 </div>
             </form>
+
+            <EntityManagementList type="brand" reloadKey={listReloadKey} />
 
             <ConfirmationModal
                 isOpen={isConfirmOpen}

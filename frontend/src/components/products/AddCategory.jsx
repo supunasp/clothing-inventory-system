@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../axiosConfig";
 import ConfirmationModal from "../common/ConfirmationModal";
+import EntityManagementList from "../common/EntityManagementList";
+import PageHeader from "../common/PageHeader";
 
 const AddCategory = () => {
     const navigate = useNavigate();
@@ -14,6 +16,7 @@ const AddCategory = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
+    const [listReloadKey, setListReloadKey] = useState(0);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -46,6 +49,7 @@ const AddCategory = () => {
                 categoryName: "",
             });
             setIsConfirmOpen(false);
+            setListReloadKey((current) => current + 1);
         } catch (error) {
             setErrorMessage(
                 error.response?.data?.message || "Unable to create category."
@@ -57,20 +61,7 @@ const AddCategory = () => {
 
     return (
         <>
-            <div className="mb-5 flex items-center gap-3">
-                <button
-                    type="button"
-                    onClick={() => navigate("/dashboard")}
-                    className="text-xl text-gray-700 hover:text-gray-900"
-                    aria-label="Back to dashboard"
-                >
-                    ←
-                </button>
-
-                <h1 className="text-lg font-semibold text-gray-900">
-                    Add Category
-                </h1>
-            </div>
+            <PageHeader title="Add Category" onBack={() => navigate("/dashboard")} />
 
             <form
                 onSubmit={handleSubmit}
@@ -134,6 +125,8 @@ const AddCategory = () => {
                     </button>
                 </div>
             </form>
+
+            <EntityManagementList type="category" reloadKey={listReloadKey} />
 
             <ConfirmationModal
                 isOpen={isConfirmOpen}

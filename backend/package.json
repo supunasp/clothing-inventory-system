@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "esm": "^3.2.25",
-    "mocha": "^11.7.5",
+    "mocha": "^11.3.0",
     "nodemon": "^2.0.15",
     "sinon": "^22.0.0"
   },

@@ -5,6 +5,7 @@ const {
     getProductVariants,
     getProductVariantById,
     updateProductVariant,
+    adjustInventory,
     deleteProductVariant,
 } = require('../controllers/productVariantController');
 
@@ -14,6 +15,7 @@ router.post('/', protect, createProductVariant);
 router.get('/', protect, getProductVariants);
 router.get('/:sku', protect, getProductVariantById);
 router.put('/:sku', protect, updateProductVariant);
+router.post('/:sku/inventory', protect, adjustInventory);
 router.delete('/:sku', protect, deleteProductVariant);
 
 module.exports = router;

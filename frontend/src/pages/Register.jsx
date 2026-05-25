@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import { CheckSquare, Eye, EyeOff, LockKeyhole, Mail, User } from 'lucide-react';
+import { Check, Eye, EyeOff, LockKeyhole, Mail, User } from 'lucide-react';
 import {Link, useNavigate} from 'react-router-dom';
 import axiosInstance from '../axiosConfig';
 import {useAuth} from '../context/AuthContext';
@@ -13,7 +13,7 @@ const Register = () => {
         password: '',
     });
 
-    const [agree, setAgree] = useState(true);
+    const [agree, setAgree] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -49,7 +49,7 @@ const Register = () => {
 
             const response = await axiosInstance.post('/api/auth/register', payload);
             login(response.data);
-            navigate('/tasks');
+            navigate('/dashboard');
         } catch (error) {
             setError(error.response?.data?.message || 'Registration failed. Please try again.');
         } finally {
@@ -165,31 +165,31 @@ const Register = () => {
                         </button>
                     </div>
 
-            {/*        <label className="flex items-center gap-2 text-xs text-gray-500 mb-8">*/}
-            {/*            <input*/}
-            {/*                type="checkbox"*/}
-            {/*                checked={agree}*/}
-            {/*                onChange={(e) => setAgree(e.target.checked)}*/}
-            {/*                className="sr-only"*/}
-            {/*            />*/}
+                    <label className="flex items-center gap-2 text-xs text-gray-500 mb-8 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={agree}
+                            onChange={(e) => setAgree(e.target.checked)}
+                            className="sr-only"
+                        />
 
-            {/*            <span*/}
-            {/*                className={`flex h-4 w-4 items-center justify-center rounded border ${*/}
-            {/*                    agree*/}
-            {/*                        ? 'border-blue-600 bg-blue-600 text-white'*/}
-            {/*                        : 'border-gray-300 bg-white text-transparent'*/}
-            {/*                }`}*/}
-            {/*            >*/}
-            {/*                <CheckSquare size={12} strokeWidth={2} />*/}
-            {/*            </span>*/}
+                        <span
+                            className={`flex h-4 w-4 items-center justify-center rounded border ${
+                                agree
+                                    ? 'border-blue-600 bg-blue-600 text-white'
+                                    : 'border-gray-300 bg-white text-transparent'
+                            }`}
+                        >
+                            <Check size={12} strokeWidth={3} />
+                        </span>
 
-            {/*            <span>*/}
-            {/*  I agree to the{' '}*/}
-            {/*                <button type="button" className="text-blue-700 font-semibold">*/}
-            {/*    Terms & Privacy Policy*/}
-            {/*  </button>*/}
-            {/*</span>*/}
-            {/*        </label>*/}
+                        <span>
+                            I agree to the{' '}
+                            <span className="text-blue-700 font-semibold">
+                                Terms &amp; Privacy Policy
+                            </span>
+                        </span>
+                    </label>
 
                     <button
                         type="submit"
