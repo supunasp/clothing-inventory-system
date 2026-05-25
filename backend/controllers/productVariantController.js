@@ -1,4 +1,5 @@
 const productVariantService = require('../services/productVariantService');
+const logger = require("../utils/logger");
 
 const createProductVariant = async (req, res) => {
     try {
@@ -70,6 +71,7 @@ const convertToProductVariantResponse = (productVariant) => ({
 });
 
 const handleControllerError = (res, error, fallbackMessage) => {
+    logger.error(fallbackMessage, error);
     return res.status(error.statusCode || 500).json({
         message: error.statusCode ? error.message : fallbackMessage,
         error: error.message,

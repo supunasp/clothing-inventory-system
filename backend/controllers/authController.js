@@ -2,6 +2,7 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const {ROLE_STAFF} = require('../constants');
+const logger = require("../utils/logger");
 
 const registerUser = async (req, res) => {
     const {firstName, lastName, email, password} = req.body;
@@ -20,6 +21,7 @@ const registerUser = async (req, res) => {
             });
         res.status(201).json(convertToUserResponse(user));
     } catch (error) {
+        logger.error('Error registering user:', error);
         res.status(500).json({message: error.message});
     }
 };
@@ -34,6 +36,7 @@ const loginUser = async (req, res) => {
             res.status(401).json({message: 'Invalid email or password'});
         }
     } catch (error) {
+        logger.error('Error logging in user:', error);
         res.status(500).json({message: error.message});
     }
 };
@@ -47,6 +50,7 @@ const getProfile = async (req, res) => {
 
         res.status(200).json(convertToUserResponse(user));
     } catch (error) {
+        logger.error('Error fetching user profile:', error);
         res.status(500).json({message: 'Server error', error: error.message});
     }
 };
@@ -66,6 +70,7 @@ const updateUserProfile = async (req, res) => {
         const updatedUser = await user.save();
         res.json(convertToUserResponse(updatedUser));
     } catch (error) {
+        logger.error('Error updating user profile:', error);
         res.status(500).json({message: error.message});
     }
 };

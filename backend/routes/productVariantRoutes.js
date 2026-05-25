@@ -1,5 +1,5 @@
 const express = require('express');
-
+const {protect} = require("../middleware/authMiddleware");
 const {
     createProductVariant,
     getProductVariants,
@@ -10,10 +10,10 @@ const {
 
 const router = express.Router();
 
-router.post('/', createProductVariant);
-router.get('/', getProductVariants);
-router.get('/:sku', getProductVariantById);
-router.put('/:sku', updateProductVariant);
-router.delete('/:sku', deleteProductVariant);
+router.post('/', protect, createProductVariant);
+router.get('/', protect, getProductVariants);
+router.get('/:sku', protect, getProductVariantById);
+router.put('/:sku', protect, updateProductVariant);
+router.delete('/:sku', protect, deleteProductVariant);
 
 module.exports = router;

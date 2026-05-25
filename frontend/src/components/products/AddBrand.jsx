@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {useState} from "react";
+import {useNavigate} from "react-router-dom";
+import axiosInstance from "../../axiosConfig";
 import ConfirmationModal from "../common/ConfirmationModal";
 
 const AddBrand = () => {
@@ -15,7 +16,7 @@ const AddBrand = () => {
     const [errorMessage, setErrorMessage] = useState("");
 
     const handleChange = (event) => {
-        const { name, value } = event.target;
+        const {name, value} = event.target;
 
         setFormData((currentData) => ({
             ...currentData,
@@ -41,9 +42,7 @@ const AddBrand = () => {
         setErrorMessage("");
 
         try {
-            // Add brand API call here when backend endpoint is ready.
-            // Example:
-            // await axiosInstance.post("/api/brands", formData);
+            await axiosInstance.post("/api/brands", formData);
 
             setSuccessMessage("Brand saved successfully.");
             setFormData({
@@ -86,13 +85,15 @@ const AddBrand = () => {
                 )}
 
                 {successMessage && (
-                    <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-700">
+                    <div
+                        className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-700">
                         {successMessage}
                     </div>
                 )}
 
                 <div className="space-y-5">
-                    <label className="grid grid-cols-1 gap-2 text-xs font-medium text-gray-700 md:grid-cols-[90px_1fr] md:items-center">
+                    <label
+                        className="grid grid-cols-1 gap-2 text-xs font-medium text-gray-700 md:grid-cols-[90px_1fr] md:items-center">
                         Id
                         <input
                             type="text"
@@ -105,7 +106,8 @@ const AddBrand = () => {
                         />
                     </label>
 
-                    <label className="grid grid-cols-1 gap-2 text-xs font-medium text-gray-700 md:grid-cols-[90px_1fr] md:items-center">
+                    <label
+                        className="grid grid-cols-1 gap-2 text-xs font-medium text-gray-700 md:grid-cols-[90px_1fr] md:items-center">
                         Name
                         <input
                             type="text"
@@ -130,9 +132,10 @@ const AddBrand = () => {
 
                     <button
                         type="submit"
+                        disabled={isSubmitting}
                         className="rounded-md bg-emerald-600 px-8 py-2 text-xs font-medium text-white hover:bg-emerald-700"
                     >
-                        Submit
+                        {isSubmitting ? 'Submitting...' : 'Submit'}
                     </button>
                 </div>
             </form>

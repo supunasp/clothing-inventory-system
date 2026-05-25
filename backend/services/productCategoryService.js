@@ -25,6 +25,30 @@ const getCategories = async () => {
     return ProductCategory.find().sort({createdAt: -1});
 };
 
+const getCategoriesPaginated = async ({limit, skip, search}) => {
+    const filter = {};
+
+    if (search) {
+        filter.$or = [
+            {categoryId: {$regex: search, $options: 'i'}},
+            {categoryName: {$regex: search, $options: 'i'}},
+        ];
+    }
+
+    const [categories, totalItems] = await Promise.all([
+        ProductCategory.find(filter)
+            .sort({createdAt: -1})
+            .skip(skip)
+            .limit(limit),
+        ProductCategory.countDocuments(filter),
+    ]);
+
+    return {
+        categories,
+        totalItems,
+    };
+};
+
 const getCategoryById = async (categoryId) => {
     const category = await ProductCategory.findOne({categoryId});
 
@@ -89,6 +113,7 @@ const findCategoryDocumentByCategoryId = async (categoryId) => {
 module.exports = {
     createCategory,
     getCategories,
+    getCategoriesPaginated,
     getCategoryById,
     updateCategory,
     deleteCategory,

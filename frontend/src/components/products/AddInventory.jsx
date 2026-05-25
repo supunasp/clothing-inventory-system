@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import axiosInstance from "../../axiosConfig";
 import ConfirmationModal from "../common/ConfirmationModal";
 
 const AddInventory = () => {
@@ -11,7 +12,7 @@ const AddInventory = () => {
     const [formData, setFormData] = useState({
         color: "",
         size: "",
-        amount: "",
+        stockAmount: "",
         reference: "",
     });
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -33,7 +34,7 @@ const AddInventory = () => {
         setSuccessMessage("");
         setErrorMessage("");
 
-        if (!formData.color || !formData.size || !formData.amount || !formData.reference) {
+        if (!formData.color || !formData.size || !formData.stockAmount || !formData.reference) {
             setErrorMessage("Please complete all inventory fields.");
             return;
         }
@@ -46,15 +47,25 @@ const AddInventory = () => {
         setErrorMessage("");
 
         try {
-            // Add inventory API call here when backend endpoint is ready.
-            // Example:
-            // await axiosInstance.post("/api/inventory", formData);
+
+            if (!product?.productId) {
+                setErrorMessage("Product information is missing. Please select a product first.");
+                return;
+            }
+
+            await axiosInstance.post("/api/products/variants", {
+                product: product._id,
+                color: formData.color,
+                size: formData.size,
+                stockAmount: Number(formData.stockAmount),
+                reference: formData.reference,
+            });
 
             setSuccessMessage("Inventory saved successfully.");
             setFormData({
                 color: "",
                 size: "",
-                amount: "",
+                stockAmount: "",
                 reference: "",
             });
             setIsConfirmOpen(false);
@@ -145,13 +156,13 @@ const AddInventory = () => {
                     </label>
 
                     <label className="grid grid-cols-1 gap-2 text-xs font-medium text-gray-700 md:grid-cols-[90px_1fr] md:items-center">
-                        Amount
+                        Stock Amount
                         <input
                             type="number"
-                            name="amount"
-                            value={formData.amount}
+                            name="stockAmount"
+                            value={formData.stockAmount}
                             onChange={handleChange}
-                            placeholder="Enter Amount"
+                            placeholder="Enter Stock Amount"
                             min="1"
                             required
                             className="h-10 rounded-md border border-gray-300 px-3 text-xs outline-none focus:border-blue-500"
@@ -183,9 +194,10 @@ const AddInventory = () => {
 
                     <button
                         type="submit"
+                        disabled={isUpdating}
                         className="rounded-md bg-emerald-600 px-8 py-2 text-xs font-medium text-white hover:bg-emerald-700"
                     >
-                        Submit
+                        {isUpdating ? "Saving..." : "Submit"}
                     </button>
                 </div>
             </form>

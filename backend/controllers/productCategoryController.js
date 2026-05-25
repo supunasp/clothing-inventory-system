@@ -1,5 +1,10 @@
 const productCategoryService = require('../services/productCategoryService');
 
+const {
+    getPaginationParams,
+    buildPaginationResponse,
+} = require('../utils/pagination');
+const logger = require("../utils/logger");
 const createCategory = async (req, res) => {
     try {
         const category = await productCategoryService.createCategory(req.body);
@@ -15,9 +20,29 @@ const createCategory = async (req, res) => {
 
 const getCategories = async (req, res) => {
     try {
-        const categories = await productCategoryService.getCategories();
+        if (req.query.page || req.query.limit || req.query.search) {
+            const {page, limit, skip} = getPaginationParams(req.query);
 
-        return res.status(200).json(categories.map(convertToCategoryResponse));
+            const {categories, totalItems} =
+                await productCategoryService.getCategoriesPaginated({
+                    limit,
+                    skip,
+                    search: req.query.search,
+                });
+
+            return res.status(200).json(
+                buildPaginationResponse({
+                    data: categories.map(convertToCategoryResponse),
+                    page,
+                    limit,
+                    totalItems,
+                })
+            );
+        } else {
+
+            const categories = await productCategoryService.getCategories();
+            return res.status(200).json(categories.map(convertToCategoryResponse));
+        }
     } catch (error) {
         return handleControllerError(res, error, 'Error fetching categories');
     }
@@ -68,6 +93,7 @@ const convertToCategoryResponse = (category) => ({
 });
 
 const handleControllerError = (res, error, fallbackMessage) => {
+    logger.error(fallbackMessage, error);
     return res.status(error.statusCode || 500).json({
         message: error.statusCode ? error.message : fallbackMessage,
         error: error.message,
