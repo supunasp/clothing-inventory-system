@@ -3,10 +3,19 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const {ROLE_STAFF} = require('../constants');
 const logger = require("../utils/logger");
+const {isPasswordValid, PASSWORD_RULES_MESSAGE} = require('../utils/passwordValidator');
 
 const registerUser = async (req, res) => {
     const {firstName, lastName, email, password} = req.body;
     try {
+        if (!firstName || !lastName || !email || !password) {
+            return res.status(400).json({message: 'First name, last name, email and password are required'});
+        }
+
+        if (!isPasswordValid(password)) {
+            return res.status(400).json({message: PASSWORD_RULES_MESSAGE});
+        }
+
         const userExists = await User.findOne({email});
         if (userExists) return res.status(400).json({message: 'User already exists'});
 

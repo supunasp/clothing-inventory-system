@@ -5,12 +5,19 @@ import axiosInstance from '../axiosConfig';
 import {useAuth} from '../context/AuthContext';
 import logo from '../assets/logo.png';
 
+const PASSWORD_RULES_MESSAGE =
+    'Password must be at least 8 characters and include at least one letter and one digit.';
+
+const isPasswordValid = (pwd) =>
+    typeof pwd === 'string' && pwd.length >= 8 && /[A-Za-z]/.test(pwd) && /\d/.test(pwd);
+
 const Register = () => {
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
         email: '',
         password: '',
+        confirmPassword: '',
     });
 
     const [agree, setAgree] = useState(false);
@@ -34,6 +41,16 @@ const Register = () => {
 
         if (!agree) {
             setError('Please agree to the Terms & Privacy Policy.');
+            return;
+        }
+
+        if (!isPasswordValid(formData.password)) {
+            setError(PASSWORD_RULES_MESSAGE);
+            return;
+        }
+
+        if (formData.password !== formData.confirmPassword) {
+            setError('Passwords do not match.');
             return;
         }
 
@@ -132,7 +149,7 @@ const Register = () => {
                         />
                     </div>
 
-                    <div className="mb-5 relative">
+                    <div className="mb-4 relative">
                         <LockKeyhole
                             size={18}
                             strokeWidth={1.8}
@@ -147,7 +164,7 @@ const Register = () => {
                             value={formData.password}
                             onChange={handleChange}
                             required
-                            minLength={6}
+                            minLength={8}
                             className="w-full rounded-xl bg-gray-50 border border-gray-100 py-4 pl-14 pr-16 text-sm outline-none focus:border-blue-500"
                         />
 
@@ -164,6 +181,30 @@ const Register = () => {
                             )}
                         </button>
                     </div>
+
+                    <div className="mb-2 relative">
+                        <LockKeyhole
+                            size={18}
+                            strokeWidth={1.8}
+                            className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"
+                            aria-hidden="true"
+                        />
+
+                        <input
+                            type={showPassword ? 'text' : 'password'}
+                            name="confirmPassword"
+                            placeholder="Confirm Password"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                            required
+                            minLength={8}
+                            className="w-full rounded-xl bg-gray-50 border border-gray-100 py-4 pl-14 pr-16 text-sm outline-none focus:border-blue-500"
+                        />
+                    </div>
+
+                    <p className="mb-5 text-[11px] text-gray-400">
+                        {PASSWORD_RULES_MESSAGE}
+                    </p>
 
                     <label className="flex items-center gap-2 text-xs text-gray-500 mb-8 cursor-pointer">
                         <input

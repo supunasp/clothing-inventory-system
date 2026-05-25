@@ -41,6 +41,42 @@ describe('Auth endpoints', () => {
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal('User already exists');
         });
+
+        it('rejects a password shorter than 8 characters', async () => {
+            const res = await chai.request(app).post('/api/auth/register').send({
+                firstName: 'Short',
+                lastName: 'Pwd',
+                email: 'short@test.com',
+                password: 'pw12',
+            });
+
+            expect(res).to.have.status(400);
+            expect(res.body.message).to.match(/at least 8 characters/i);
+        });
+
+        it('rejects a password with no digit', async () => {
+            const res = await chai.request(app).post('/api/auth/register').send({
+                firstName: 'No',
+                lastName: 'Digit',
+                email: 'nodigit@test.com',
+                password: 'onlyletters',
+            });
+
+            expect(res).to.have.status(400);
+            expect(res.body.message).to.match(/letter and one digit/i);
+        });
+
+        it('rejects a password with no letter', async () => {
+            const res = await chai.request(app).post('/api/auth/register').send({
+                firstName: 'No',
+                lastName: 'Letter',
+                email: 'noletter@test.com',
+                password: '12345678',
+            });
+
+            expect(res).to.have.status(400);
+            expect(res.body.message).to.match(/letter and one digit/i);
+        });
     });
 
     describe('POST /api/auth/login', () => {
