@@ -25,11 +25,19 @@ const createAudit = async ({
     });
 };
 
-const getAuditsPaginated = async ({limit, skip, variantIds}) => {
+const getAuditsPaginated = async ({limit, skip, variantIds, search}) => {
     const filter = {};
 
     if (variantIds !== undefined) {
         filter.productVariant = {$in: variantIds};
+    }
+
+    if (search && search.trim()) {
+        const trimmed = search.trim();
+        filter.$or = [
+            {sku: {$regex: trimmed, $options: 'i'}},
+            {reference: {$regex: trimmed, $options: 'i'}},
+        ];
     }
 
     const [audits, totalItems] = await Promise.all([

@@ -110,6 +110,51 @@ describe('Admin endpoints', () => {
         });
     });
 
+    describe('GET /api/admin/low-stock', () => {
+        it('returns variants at or below threshold and skips inactive products', async () => {
+            const ProductCategory = require('../models/ProductCategory');
+            const ProductBrand = require('../models/ProductBrand');
+            const Product = require('../models/Product');
+            const ProductVariant = require('../models/ProductVariant');
+
+            const category = await ProductCategory.create({categoryId: 'LS-C', categoryName: 'Shirts'});
+            const brand = await ProductBrand.create({brandId: 'LS-B', brandName: 'Nike'});
+
+            const active = await Product.create({
+                productId: 'LS-ACTIVE',
+                name: 'Active Item',
+                category: category._id,
+                brand: brand._id,
+                active: true,
+            });
+            const inactive = await Product.create({
+                productId: 'LS-INACTIVE',
+                name: 'Inactive Item',
+                category: category._id,
+                brand: brand._id,
+                active: false,
+            });
+
+            await ProductVariant.create({sku: 'LS-A#Blue#M', product: active._id, color: 'Blue', size: 'M', stockAmount: 3});
+            await ProductVariant.create({sku: 'LS-A#Red#L', product: active._id, color: 'Red', size: 'L', stockAmount: 50});
+            await ProductVariant.create({sku: 'LS-I#Blue#M', product: inactive._id, color: 'Blue', size: 'M', stockAmount: 1});
+
+            const res = await chai.request(app).get('/api/admin/low-stock').set(headers);
+
+            expect(res).to.have.status(200);
+            expect(res.body.lowStockThreshold).to.equal(5);
+            expect(res.body.data).to.have.length(1);
+            expect(res.body.data[0].sku).to.equal('LS-A#Blue#M');
+            expect(res.body.data[0].product.productId).to.equal('LS-ACTIVE');
+        });
+
+        it('blocks staff', async () => {
+            const staff = await createStaffUser();
+            const res = await chai.request(app).get('/api/admin/low-stock').set(authHeader(staff));
+            expect(res).to.have.status(403);
+        });
+    });
+
     describe('GET /api/admin/users', () => {
         it('lists users paginated and filtered by role', async () => {
             await createStaffUser({ email: 'staff1@test.com' });

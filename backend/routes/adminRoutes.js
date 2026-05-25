@@ -1,6 +1,7 @@
 const express = require('express');
 const {
     getAdminAnalytics,
+    getLowStockProducts,
     getUsers,
     updateUserStatus,
     updateUserRole,
@@ -13,6 +14,7 @@ const router = express.Router();
 router.use(protect, adminOnly);
 
 router.get('/analytics', getAdminAnalytics);
+router.get('/low-stock', getLowStockProducts);
 router.get('/users', getUsers);
 router.put('/users/:id/status', updateUserStatus);
 router.put('/users/:id/role', updateUserRole);

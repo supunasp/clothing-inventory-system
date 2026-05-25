@@ -18,6 +18,7 @@ const getAudits = async (req, res) => {
             limit,
             skip,
             variantIds,
+            search: req.query.search,
         });
 
         return res.status(200).json(

@@ -84,6 +84,58 @@ describe('InventoryAudit endpoints', () => {
             });
         });
 
+        it('filters by search term matching sku or reference', async () => {
+            const category = await ProductCategory.create({ categoryId: 'S-C', categoryName: 'Shirts' });
+            const brand = await ProductBrand.create({ brandId: 'S-B', brandName: 'Nike' });
+            const product = await Product.create({
+                productId: 'S-P',
+                name: 'P',
+                category: category._id,
+                brand: brand._id,
+            });
+            const variant = await ProductVariant.create({
+                sku: 'S-P#Blue#M',
+                product: product._id,
+                color: 'Blue',
+                size: 'M',
+                stockAmount: 5,
+            });
+
+            await InventoryAudit.create({
+                productVariant: variant._id,
+                sku: variant.sku,
+                type: 'increase',
+                amount: 5,
+                quantityBefore: 0,
+                quantityAfter: 5,
+                reference: 'PO-1234',
+                updatedBy: user._id,
+            });
+            await InventoryAudit.create({
+                productVariant: variant._id,
+                sku: variant.sku,
+                type: 'increase',
+                amount: 2,
+                quantityBefore: 5,
+                quantityAfter: 7,
+                reference: 'INV-9999',
+                updatedBy: user._id,
+            });
+
+            const skuMatch = await chai
+                .request(app)
+                .get('/api/inventory-audits?page=1&limit=10&search=Blue')
+                .set(headers);
+            expect(skuMatch.body.data).to.have.length(2);
+
+            const refMatch = await chai
+                .request(app)
+                .get('/api/inventory-audits?page=1&limit=10&search=PO-1234')
+                .set(headers);
+            expect(refMatch.body.data).to.have.length(1);
+            expect(refMatch.body.data[0].reference).to.equal('PO-1234');
+        });
+
         it('filters by productId', async () => {
             const category = await ProductCategory.create({ categoryId: 'F-C', categoryName: 'Shirts' });
             const brand = await ProductBrand.create({ brandId: 'F-B', brandName: 'Nike' });

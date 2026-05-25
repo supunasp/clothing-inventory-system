@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {Award, LayoutGrid, Tag, Users} from "lucide-react";
+import {Award, LayoutGrid, PieChart, Star, Tag, Users} from "lucide-react";
 import {useAuth} from "../context/AuthContext";
 import axiosInstance from "../axiosConfig";
 import EntityManagementList from "../components/common/EntityManagementList";
@@ -8,6 +8,21 @@ import Pagination from "../components/common/Pagination";
 import ProductFilters from "../components/common/ProductFilters";
 import useReferenceData from "../hooks/useReferenceData";
 import { PAGE_SIZE } from "../constants";
+
+const formatDate = (iso) => {
+    if (!iso) return "-";
+    try {
+        return new Date(iso).toLocaleString();
+    } catch (error) {
+        return iso;
+    }
+};
+
+const formatUser = (user) => {
+    if (!user) return "-";
+    const name = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
+    return name || user.email || "-";
+};
 
 const StatCard = ({icon, iconBg = "bg-emerald-50", title, value}) => {
     return (
@@ -32,12 +47,17 @@ const AdminDashboard = () => {
         totalCategories: 0,
         totalBrands: 0,
         totalUsers: 0,
+        totalStock: 0,
+        lowStockThreshold: 5,
     });
 
     const [products, setProducts] = useState([]);
     const [productPagination, setProductPagination] = useState(null);
     const [productPage, setProductPage] = useState(1);
     const [statusTogglingId, setStatusTogglingId] = useState(null);
+
+    const [lowStock, setLowStock] = useState([]);
+    const [recentAudits, setRecentAudits] = useState([]);
 
     const {categories: filterCategories, brands: filterBrands, reload: reloadReferenceData} = useReferenceData();
 
@@ -61,9 +81,31 @@ const AdminDashboard = () => {
         }
     }, []);
 
+    const loadLowStock = useCallback(async () => {
+        try {
+            const response = await axiosInstance.get("/api/admin/low-stock");
+            setLowStock(response.data.data || []);
+        } catch (error) {
+            // Non-critical — leave empty
+        }
+    }, []);
+
+    const loadRecentAudits = useCallback(async () => {
+        try {
+            const response = await axiosInstance.get("/api/inventory-audits", {
+                params: { page: 1, limit: 5 },
+            });
+            setRecentAudits(response.data.data || []);
+        } catch (error) {
+            // Non-critical
+        }
+    }, []);
+
     useEffect(() => {
         loadAnalytics();
-    }, [loadAnalytics]);
+        loadLowStock();
+        loadRecentAudits();
+    }, [loadAnalytics, loadLowStock, loadRecentAudits]);
 
     const loadProducts = useCallback(async () => {
         setIsLoading(true);
@@ -110,7 +152,7 @@ const AdminDashboard = () => {
                 `/api/products/${encodeURIComponent(product.productId)}/status`,
                 { active: !product.active }
             );
-            await Promise.all([loadProducts(), loadAnalytics()]);
+            await Promise.all([loadProducts(), loadAnalytics(), loadLowStock(), loadRecentAudits()]);
         } catch (error) {
             setErrorMessage(
                 error.response?.data?.message || "Unable to update product status."
@@ -124,7 +166,9 @@ const AdminDashboard = () => {
         reloadReferenceData();
         loadAnalytics();
         loadProducts();
-    }, [reloadReferenceData, loadAnalytics, loadProducts]);
+        loadLowStock();
+        loadRecentAudits();
+    }, [reloadReferenceData, loadAnalytics, loadProducts, loadLowStock, loadRecentAudits]);
 
     const handleCategoryFilterChange = (event) => {
         setSelectedCategory(event.target.value);
@@ -148,12 +192,24 @@ const AdminDashboard = () => {
                 </div>
             )}
 
-            <div className="mb-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <div className="mb-6 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                 <StatCard
                     icon={<LayoutGrid size={20} className="text-gray-900" fill="currentColor"/>}
                     iconBg="bg-emerald-50"
                     title="Total Products"
                     value={analytics.totalProducts}
+                />
+                <StatCard
+                    icon={<PieChart size={20} className="text-gray-900"/>}
+                    iconBg="bg-emerald-50"
+                    title="Total Inventory"
+                    value={analytics.totalStock}
+                />
+                <StatCard
+                    icon={<Star size={20} className="text-gray-900"/>}
+                    iconBg="bg-amber-50"
+                    title="Low Stock Variants"
+                    value={analytics.lowStockVariants ?? 0}
                 />
                 <StatCard
                     icon={<Award size={20} className="text-gray-900"/>}
@@ -173,6 +229,123 @@ const AdminDashboard = () => {
                     title="Total Users"
                     value={analytics.totalUsers}
                 />
+            </div>
+
+            <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+                <section className="rounded-xl border border-gray-100 bg-white shadow-sm">
+                    <div className="border-b border-gray-100 px-5 py-4">
+                        <h2 className="text-sm font-medium text-gray-900">
+                            Low Stock Products
+                        </h2>
+                        <p className="mt-1 text-xs text-gray-500">
+                            Variants at or below threshold of {analytics.lowStockThreshold ?? 5}
+                        </p>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs">
+                            <thead className="border-b border-gray-100 text-gray-500">
+                                <tr>
+                                    <th className="px-5 py-3 font-medium">Product</th>
+                                    <th className="px-5 py-3 font-medium">Color</th>
+                                    <th className="px-5 py-3 font-medium">Size</th>
+                                    <th className="px-5 py-3 font-medium">Stock</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {lowStock.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="4" className="px-5 py-6 text-center text-xs text-gray-500">
+                                            No low-stock items.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    lowStock.slice(0, 10).map((item) => (
+                                        <tr key={item.sku} className="border-b border-gray-100">
+                                            <td className="px-5 py-3 font-medium text-gray-900">
+                                                {item.product?.name || item.sku}
+                                            </td>
+                                            <td className="px-5 py-3 text-gray-600">{item.color}</td>
+                                            <td className="px-5 py-3 text-gray-600">{item.size}</td>
+                                            <td className="px-5 py-3">
+                                                <span
+                                                    className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                                                        item.stockAmount === 0
+                                                            ? "bg-red-50 text-red-700"
+                                                            : "bg-amber-50 text-amber-700"
+                                                    }`}
+                                                >
+                                                    {item.stockAmount}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section className="rounded-xl border border-gray-100 bg-white shadow-sm">
+                    <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+                        <h2 className="text-sm font-medium text-gray-900">
+                            Recently Updated Products
+                        </h2>
+                        <button
+                            type="button"
+                            onClick={() => navigate("/admin/inventory")}
+                            className="text-xs font-medium text-blue-600 hover:underline"
+                        >
+                            View all →
+                        </button>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs">
+                            <thead className="border-b border-gray-100 text-gray-500">
+                                <tr>
+                                    <th className="px-5 py-3 font-medium">Date</th>
+                                    <th className="px-5 py-3 font-medium">Product</th>
+                                    <th className="px-5 py-3 font-medium">Change</th>
+                                    <th className="px-5 py-3 font-medium">By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {recentAudits.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="4" className="px-5 py-6 text-center text-xs text-gray-500">
+                                            No recent inventory updates.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    recentAudits.map((audit) => (
+                                        <tr key={audit.auditId} className="border-b border-gray-100">
+                                            <td className="px-5 py-3 text-gray-600">
+                                                {formatDate(audit.createdAt)}
+                                            </td>
+                                            <td className="px-5 py-3 text-gray-900">
+                                                {audit.product?.name || audit.sku}
+                                            </td>
+                                            <td className="px-5 py-3">
+                                                <span
+                                                    className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                                                        audit.type === "increase"
+                                                            ? "bg-emerald-50 text-emerald-700"
+                                                            : "bg-red-50 text-red-700"
+                                                    }`}
+                                                >
+                                                    {audit.type === "increase" ? "+" : "-"}
+                                                    {audit.amount}
+                                                </span>
+                                            </td>
+                                            <td className="px-5 py-3 text-gray-600">
+                                                {formatUser(audit.updatedBy)}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
             </div>
 
             <section className="rounded-xl border border-gray-100 bg-white shadow-sm">

@@ -1,4 +1,14 @@
-export const LOW_STOCK_THRESHOLD = 5;
+const FALLBACK_LOW_STOCK_THRESHOLD = 5;
+
+const parsePositiveInt = (raw, fallback) => {
+    const parsed = parseInt(raw, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
+export const LOW_STOCK_THRESHOLD = parsePositiveInt(
+    process.env.REACT_APP_LOW_STOCK_THRESHOLD,
+    FALLBACK_LOW_STOCK_THRESHOLD
+);
 
 export const STOCK_STATUS = {
     OUT_OF_STOCK: {

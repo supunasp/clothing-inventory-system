@@ -212,6 +212,16 @@ const deleteProductVariant = async (sku) => {
     return deletedProductVariant;
 };
 
+const getLowStockVariants = async (threshold) => {
+    return ProductVariant.find({stockAmount: {$lte: threshold}})
+        .populate({
+            path: 'product',
+            match: {active: true},
+            populate: [{path: 'category'}, {path: 'brand'}],
+        })
+        .sort({stockAmount: 1});
+};
+
 const findVariantIdsByProductId = async (productId) => {
     const product = await productService.findProductDocumentByProductId(productId);
     const variants = await ProductVariant.find({product: product._id}).select('_id');
@@ -244,4 +254,5 @@ Object.assign(module.exports, {
     deleteProductVariant,
     aggregateInventoryByProductIds,
     findVariantIdsByProductId,
+    getLowStockVariants,
 });

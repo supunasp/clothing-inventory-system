@@ -3,13 +3,23 @@ const ProductCategory = require('../models/ProductCategory');
 const ProductBrand = require('../models/ProductBrand');
 const ProductVariant = require('../models/ProductVariant');
 const User = require('../models/User');
+const productVariantService = require('../services/productVariantService');
 const {getPaginationParams, buildPaginationResponse} = require('../utils/pagination');
 const {ROLE_ADMIN, ROLE_STAFF} = require('../constants');
 
 const logger = require("../utils/logger");
 
+const FALLBACK_LOW_STOCK_THRESHOLD = 5;
+
+const getLowStockThreshold = () => {
+    const raw = parseInt(process.env.LOW_STOCK_THRESHOLD, 10);
+    return Number.isFinite(raw) && raw > 0 ? raw : FALLBACK_LOW_STOCK_THRESHOLD;
+};
+
 const getAdminAnalytics = async (req, res) => {
     try {
+        const lowStockThreshold = getLowStockThreshold();
+
         const [
             totalProducts,
             totalCategories,
@@ -35,7 +45,7 @@ const getAdminAnalytics = async (req, res) => {
             ProductVariant.countDocuments({
                 stockAmount: {
                     $gt: 0,
-                    $lte: 5,
+                    $lte: lowStockThreshold,
                 },
             }),
         ]);
@@ -48,11 +58,52 @@ const getAdminAnalytics = async (req, res) => {
             totalStock: stockSummary[0]?.totalStock || 0,
             outOfStockProducts,
             lowStockVariants,
+            lowStockThreshold,
         });
     } catch (error) {
         logger.error('Error loading admin analytics:', error);
         return res.status(500).json({
             message: 'Error loading admin analytics',
+            error: error.message,
+        });
+    }
+};
+
+const getLowStockProducts = async (req, res) => {
+    try {
+        const lowStockThreshold = getLowStockThreshold();
+        const variants = await productVariantService.getLowStockVariants(lowStockThreshold);
+
+        const data = variants
+            .filter((variant) => variant.product)
+            .map((variant) => ({
+                sku: variant.sku,
+                color: variant.color,
+                size: variant.size,
+                stockAmount: variant.stockAmount,
+                product: {
+                    productId: variant.product.productId,
+                    name: variant.product.name,
+                    category: variant.product.category
+                        ? {
+                            categoryId: variant.product.category.categoryId,
+                            categoryName: variant.product.category.categoryName,
+                        }
+                        : null,
+                    brand: variant.product.brand
+                        ? {
+                            brandId: variant.product.brand.brandId,
+                            brandName: variant.product.brand.brandName,
+                        }
+                        : null,
+                },
+            }));
+
+        return res.status(200).json({data, lowStockThreshold});
+    } catch (error) {
+        logger.error('Error loading low-stock variants', error);
+        return res.status(500).json({
+            message: 'Error loading low-stock variants',
             error: error.message,
         });
     }
@@ -235,6 +286,7 @@ const convertToAdminUserResponse = (user) => ({
 
 module.exports = {
     getAdminAnalytics,
+    getLowStockProducts,
     getUsers,
     updateUserStatus,
     updateUserRole,

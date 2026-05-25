@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { Search } from "lucide-react";
 import axiosInstance from "../axiosConfig";
 import Pagination from "../components/common/Pagination";
 import { PAGE_SIZE } from "../constants";
@@ -23,6 +24,8 @@ const InventoryAuditList = () => {
     const [audits, setAudits] = useState([]);
     const [pagination, setPagination] = useState(null);
     const [page, setPage] = useState(1);
+    const [searchInput, setSearchInput] = useState("");
+    const [searchTerm, setSearchTerm] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
 
@@ -32,7 +35,11 @@ const InventoryAuditList = () => {
 
         try {
             const response = await axiosInstance.get("/api/inventory-audits", {
-                params: { page, limit: PAGE_SIZE },
+                params: {
+                    page,
+                    limit: PAGE_SIZE,
+                    search: searchTerm || undefined,
+                },
             });
 
             setAudits(response.data.data || []);
@@ -44,11 +51,19 @@ const InventoryAuditList = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [page]);
+    }, [page, searchTerm]);
 
     useEffect(() => {
         loadAudits();
     }, [loadAudits]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearchTerm(searchInput);
+            setPage(1);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchInput]);
 
     return (
         <>
@@ -63,6 +78,24 @@ const InventoryAuditList = () => {
             )}
 
             <section className="rounded-xl border border-gray-100 bg-white shadow-sm">
+                <div className="flex justify-end border-b border-gray-100 px-5 py-3">
+                    <div className="relative">
+                        <Search
+                            size={14}
+                            strokeWidth={1.8}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                            aria-hidden="true"
+                        />
+                        <input
+                            type="search"
+                            value={searchInput}
+                            onChange={(event) => setSearchInput(event.target.value)}
+                            placeholder="Search SKU or reference"
+                            className="h-9 w-72 rounded-md border border-gray-300 bg-white pl-8 pr-3 text-xs outline-none focus:border-blue-500"
+                        />
+                    </div>
+                </div>
+
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
                         <thead className="border-y border-gray-100 text-gray-500">
