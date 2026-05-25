@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../axiosConfig";
 import PageHeader from "../components/common/PageHeader";
 import Pagination from "../components/common/Pagination";
+import StockBadge from "../components/common/StockBadge";
 import { PAGE_SIZE } from "../constants";
 
 const formatDate = (iso) => {
@@ -194,18 +195,19 @@ const AdminProductDetails = () => {
                                 <th className="px-5 py-3 font-medium">Color</th>
                                 <th className="px-5 py-3 font-medium">Size</th>
                                 <th className="px-5 py-3 font-medium">Stock</th>
+                                <th className="px-5 py-3 font-medium">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {isLoadingVariants ? (
                                 <tr>
-                                    <td colSpan="4" className="px-5 py-8 text-center text-gray-500">
+                                    <td colSpan="5" className="px-5 py-8 text-center text-gray-500">
                                         Loading variants...
                                     </td>
                                 </tr>
                             ) : variants.length === 0 ? (
                                 <tr>
-                                    <td colSpan="4" className="px-5 py-8 text-center text-gray-500">
+                                    <td colSpan="5" className="px-5 py-8 text-center text-gray-500">
                                         No variants yet for this product.
                                     </td>
                                 </tr>
@@ -217,6 +219,9 @@ const AdminProductDetails = () => {
                                         <td className="px-5 py-4 text-gray-700">{variant.size}</td>
                                         <td className="px-5 py-4 text-gray-700">
                                             {variant.stockAmount}
+                                        </td>
+                                        <td className="px-5 py-4">
+                                            <StockBadge stockAmount={variant.stockAmount} />
                                         </td>
                                     </tr>
                                 ))

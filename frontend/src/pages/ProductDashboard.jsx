@@ -5,6 +5,7 @@ import axiosInstance from "../axiosConfig";
 import ConfirmationModal from "../components/common/ConfirmationModal";
 import Pagination from "../components/common/Pagination";
 import ProductFilters from "../components/common/ProductFilters";
+import StockBadge from "../components/common/StockBadge";
 import useReferenceData from "../hooks/useReferenceData";
 import { PAGE_SIZE } from "../constants";
 
@@ -329,6 +330,7 @@ const ProductDashboard = () => {
                                     <th className="px-5 py-3 font-medium">Color</th>
                                     <th className="px-5 py-3 font-medium">Size</th>
                                     <th className="px-5 py-3 font-medium">Inventory</th>
+                                    <th className="px-5 py-3 font-medium">Status</th>
                                     <th className="px-5 py-3 font-medium"></th>
                                     <th className="px-5 py-3 font-medium"></th>
                                     <th className="px-5 py-3 font-medium"></th>
@@ -339,13 +341,13 @@ const ProductDashboard = () => {
                             <tbody>
                                 {isLoadingVariants ? (
                                     <tr>
-                                        <td colSpan="7" className="px-5 py-8 text-center text-gray-500">
+                                        <td colSpan="8" className="px-5 py-8 text-center text-gray-500">
                                             Loading variants...
                                         </td>
                                     </tr>
                                 ) : variants.length === 0 ? (
                                     <tr>
-                                        <td colSpan="7" className="px-5 py-8 text-center text-gray-500">
+                                        <td colSpan="8" className="px-5 py-8 text-center text-gray-500">
                                             No variants found for this product.
                                         </td>
                                     </tr>
@@ -355,6 +357,9 @@ const ProductDashboard = () => {
                                             <td className="px-5 py-4 text-gray-700">{variant.color}</td>
                                             <td className="px-5 py-4 text-gray-700">{variant.size}</td>
                                             <td className="px-5 py-4 text-gray-700">{variant.stockAmount}</td>
+                                            <td className="px-5 py-4">
+                                                <StockBadge stockAmount={variant.stockAmount} />
+                                            </td>
                                             <td className="px-5 py-4">
                                                 <input
                                                     type="number"

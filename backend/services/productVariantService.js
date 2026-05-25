@@ -153,28 +153,36 @@ const adjustInventory = async (sku, {type, amount, reference, userId}) => {
         throw error;
     }
 
-    const variant = await ProductVariant.findOne({sku});
-
-    if (!variant) {
-        const error = new Error('Product Variant not found');
-        error.statusCode = 404;
-        throw error;
-    }
-
-    if (type === 'decrease' && variant.stockAmount < numericAmount) {
-        const error = new Error('Insufficient stock to decrease');
-        error.statusCode = 400;
-        throw error;
-    }
-
     const delta = type === 'increase' ? numericAmount : -numericAmount;
-    const quantityBefore = variant.stockAmount;
+
+    // Atomic conditional update — for a decrease, only succeeds if there is
+    // enough stock. This makes the check + update safe under concurrent calls
+    // (no read-then-update race).
+    const updateFilter = {sku};
+    if (type === 'decrease') {
+        updateFilter.stockAmount = {$gte: numericAmount};
+    }
 
     const updatedVariant = await ProductVariant.findOneAndUpdate(
-        {sku},
+        updateFilter,
         {$inc: {stockAmount: delta}},
         {new: true, runValidators: true}
     ).populate('product');
+
+    if (!updatedVariant) {
+        // Either the SKU doesn't exist or (for a decrease) stock was insufficient.
+        const exists = await ProductVariant.exists({sku});
+        const error = new Error(
+            exists ? 'Insufficient stock to decrease' : 'Product Variant not found'
+        );
+        error.statusCode = exists ? 400 : 404;
+        throw error;
+    }
+
+    // Derive quantityBefore from the post-update value, so it's accurate even
+    // if a concurrent adjust slipped in between.
+    const quantityAfter = updatedVariant.stockAmount;
+    const quantityBefore = quantityAfter - delta;
 
     await inventoryAuditService.createAudit({
         productVariant: updatedVariant._id,
@@ -182,7 +190,7 @@ const adjustInventory = async (sku, {type, amount, reference, userId}) => {
         type,
         amount: numericAmount,
         quantityBefore,
-        quantityAfter: updatedVariant.stockAmount,
+        quantityAfter,
         reference: reference.trim(),
         updatedBy: userId,
     });
