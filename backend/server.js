@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
+const {version} = require('./package.json');
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 app.get('/api/health', (req, res) => {
     res.status(200).json({
         status: 'ok',
+        version,
         message: 'Clothing Inventory API is running',
     });
 });

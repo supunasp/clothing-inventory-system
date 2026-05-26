@@ -1,0 +1,114 @@
+name: Release and Deploy
+
+on:
+  push:
+    branches: [main]
+
+# Allow this workflow to push commits and tags back to the repo
+permissions:
+  contents: write
+
+concurrency:
+  group: release-and-deploy
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Backend tests
+    # Skip when this push is the release commit (prevents recursive runs)
+    if: "!contains(github.event.head_commit.message, 'chore(release):')"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Run backend tests
+        working-directory: backend
+        run: npm test
+        env:
+          JWT_SECRET: ci-test-secret
+
+  release:
+    name: Bump version and tag
+    needs: test
+    runs-on: ubuntu-latest
+    outputs:
+      new_tag: ${{ steps.bump.outputs.new_tag }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump patch version and create tag
+        id: bump
+        run: |
+          npm version patch -m "chore(release): %s [skip ci]"
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "new_tag=v${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Push commit and tag
+        run: |
+          git push origin main
+          git push origin --tags
+
+  deploy:
+    name: Deploy to EC2
+    needs: release
+    # Runs on the self-hosted runner installed on the EC2. No inbound SG rules needed —
+    # the runner makes outbound HTTPS to GitHub to pick up jobs. Add extra labels here
+    # (e.g. [self-hosted, linux, prod]) if you registered the runner with custom labels.
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.new_tag }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install prod deps
+        working-directory: backend
+        run: npm ci --omit=dev
+
+      - name: Link runtime .env into workspace
+        working-directory: backend
+        # actions/checkout runs `git clean -ffdx`, so we cannot keep .env in the
+        # workspace. Store it at a stable path on the EC2 and symlink it in.
+        # Set repo variable BACKEND_ENV_FILE to that absolute path (e.g.
+        # /home/runner/clothing-inventory.env).
+        run: ln -sfn "$BACKEND_ENV_FILE" .env
+        env:
+          BACKEND_ENV_FILE: ${{ vars.BACKEND_ENV_FILE }}
+
+      - name: Reload backend with pm2
+        working-directory: backend
+        run: |
+          pm2 reload clothing-inventory-backend --update-env \
+            || pm2 start server.js --name clothing-inventory-backend --update-env
+          pm2 save
