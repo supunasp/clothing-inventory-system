@@ -234,4 +234,106 @@ describe('ProductVariant endpoints', () => {
             expect(res).to.have.status(400);
         });
     });
+
+    describe('GET /api/products/variants/:sku', () => {
+        it('returns the variant by sku', async () => {
+            const { product } = await seedProduct('P-GET');
+            await ProductVariant.create({
+                sku: 'P-GET#Blue#M',
+                product: product._id,
+                color: 'Blue',
+                size: 'M',
+                stockAmount: 4,
+            });
+
+            const res = await chai
+                .request(app)
+                .get('/api/products/variants/P-GET%23Blue%23M')
+                .set(headers);
+
+            expect(res).to.have.status(200);
+            expect(res.body).to.include({
+                sku: 'P-GET#Blue#M',
+                productId: 'P-GET',
+                color: 'Blue',
+                size: 'M',
+                stockAmount: 4,
+            });
+        });
+
+        it('returns 404 for an unknown sku', async () => {
+            const res = await chai
+                .request(app)
+                .get('/api/products/variants/UNKNOWN%23X%23Y')
+                .set(headers);
+
+            expect(res).to.have.status(404);
+        });
+    });
+
+    describe('PUT /api/products/variants/:sku', () => {
+        it('updates the stock amount', async () => {
+            const { product } = await seedProduct('P-PUT');
+            await ProductVariant.create({
+                sku: 'P-PUT#Blue#M',
+                product: product._id,
+                color: 'Blue',
+                size: 'M',
+                stockAmount: 2,
+            });
+
+            const res = await chai
+                .request(app)
+                .put('/api/products/variants/P-PUT%23Blue%23M')
+                .set(headers)
+                .send({ stockAmount: 9 });
+
+            expect(res).to.have.status(200);
+            expect(res.body.product).to.include({
+                sku: 'P-PUT#Blue#M',
+                stockAmount: 9,
+            });
+        });
+
+        it('returns 404 for an unknown sku', async () => {
+            const res = await chai
+                .request(app)
+                .put('/api/products/variants/UNKNOWN%23X%23Y')
+                .set(headers)
+                .send({ stockAmount: 1 });
+
+            expect(res).to.have.status(404);
+        });
+    });
+
+    describe('DELETE /api/products/variants/:sku', () => {
+        it('deletes the variant', async () => {
+            const { product } = await seedProduct('P-DEL');
+            await ProductVariant.create({
+                sku: 'P-DEL#Blue#M',
+                product: product._id,
+                color: 'Blue',
+                size: 'M',
+                stockAmount: 1,
+            });
+
+            const res = await chai
+                .request(app)
+                .delete('/api/products/variants/P-DEL%23Blue%23M')
+                .set(headers);
+
+            expect(res).to.have.status(200);
+            const remaining = await ProductVariant.countDocuments({ sku: 'P-DEL#Blue#M' });
+            expect(remaining).to.equal(0);
+        });
+
+        it('returns 404 for an unknown sku', async () => {
+            const res = await chai
+                .request(app)
+                .delete('/api/products/variants/UNKNOWN%23X%23Y')
+                .set(headers);
+
+            expect(res).to.have.status(404);
+        });
+    });
 });

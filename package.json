@@ -8,10 +8,8 @@
     "dev": "concurrently \"npm run dev --prefix backend\" \"npm start --prefix frontend\""
   },
   "devDependencies": {
-    "chai": "^5.1.2",
-    "concurrently": "^7.0.0",
-    "mocha": "^7.2.0"
+    "concurrently": "^7.0.0"
   },
-  "author": "Task Manager Team",
+  "author": "Supun Athukorala",
   "license": "ISC"
 }
