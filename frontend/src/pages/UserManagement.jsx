@@ -118,7 +118,7 @@ const UserManagement = () => {
             message: `Are you sure you want to ${nextActive ? "activate" : "deactivate"} ${targetUser.firstName} ${targetUser.lastName}?`,
             confirmText: nextActive ? "Activate" : "Deactivate",
             action: async () => {
-                const response = await axiosInstance.patch(
+                const response = await axiosInstance.put(
                     `/api/admin/users/${targetUser.id}/status`,
                     { active: nextActive }
                 );
@@ -135,7 +135,7 @@ const UserManagement = () => {
             message: `Are you sure you want to change ${targetUser.firstName} ${targetUser.lastName}'s role to ${nextRole}?`,
             confirmText: "Update Role",
             action: async () => {
-                const response = await axiosInstance.patch(
+                const response = await axiosInstance.put(
                     `/api/admin/users/${targetUser.id}/role`,
                     { role: nextRole }
                 );
