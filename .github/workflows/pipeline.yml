@@ -16,7 +16,7 @@ concurrency:
 jobs:
   backend-test:
     name: Backend tests
-    # Skip on the release commit so we don't loop on the [skip ci] push.
+    # Skip the bot's release commit so the version-bump push doesn't recurse.
     if: "github.event_name == 'pull_request' || !contains(github.event.head_commit.message, 'chore(release):')"
     runs-on: ubuntu-latest
 
@@ -94,7 +94,7 @@ jobs:
       - name: Bump patch version and create tag
         id: bump
         run: |
-          npm version patch -m "chore(release): %s [skip ci]"
+          npm version patch -m "chore(release): %s"
           NEW_VERSION=$(node -p "require('./package.json').version")
           echo "new_tag=v${NEW_VERSION}" >> "$GITHUB_OUTPUT"
 
