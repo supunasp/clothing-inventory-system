@@ -316,4 +316,92 @@ describe('Product endpoints', () => {
             expect(res.body.data).to.have.length(2);
         });
     });
+
+    describe('PUT /api/products/:productId', () => {
+        it('updates name and description', async () => {
+            const { category, brand } = await seedCategoryBrand();
+            await Product.create({
+                productId: 'PUT-1',
+                name: 'Original',
+                description: 'old',
+                category: category._id,
+                brand: brand._id,
+            });
+
+            const res = await chai
+                .request(app)
+                .put('/api/products/PUT-1')
+                .set(headers)
+                .send({ name: 'Renamed', description: 'new' });
+
+            expect(res).to.have.status(200);
+            expect(res.body.product).to.include({
+                productId: 'PUT-1',
+                name: 'Renamed',
+                description: 'new',
+            });
+        });
+
+        it('updates category and brand by their referenced id', async () => {
+            const { category, brand } = await seedCategoryBrand();
+            await ProductCategory.create({ categoryId: 'CAT-2', categoryName: 'Trousers' });
+            await ProductBrand.create({ brandId: 'B-2', brandName: 'CK' });
+            await Product.create({
+                productId: 'PUT-2',
+                name: 'Item',
+                category: category._id,
+                brand: brand._id,
+            });
+
+            const res = await chai
+                .request(app)
+                .put('/api/products/PUT-2')
+                .set(headers)
+                .send({ category: 'CAT-2', brand: 'B-2' });
+
+            expect(res).to.have.status(200);
+            expect(res.body.product.category).to.include({ categoryId: 'CAT-2' });
+            expect(res.body.product.brand).to.include({ brandId: 'B-2' });
+        });
+
+        it('returns 404 when the product does not exist', async () => {
+            const res = await chai
+                .request(app)
+                .put('/api/products/MISSING')
+                .set(headers)
+                .send({ name: 'X' });
+
+            expect(res).to.have.status(404);
+        });
+    });
+
+    describe('DELETE /api/products/:productId', () => {
+        it('deletes the product', async () => {
+            const { category, brand } = await seedCategoryBrand();
+            await Product.create({
+                productId: 'DEL-1',
+                name: 'Item',
+                category: category._id,
+                brand: brand._id,
+            });
+
+            const res = await chai
+                .request(app)
+                .delete('/api/products/DEL-1')
+                .set(headers);
+
+            expect(res).to.have.status(200);
+            const remaining = await Product.countDocuments({ productId: 'DEL-1' });
+            expect(remaining).to.equal(0);
+        });
+
+        it('returns 404 when the product does not exist', async () => {
+            const res = await chai
+                .request(app)
+                .delete('/api/products/MISSING')
+                .set(headers);
+
+            expect(res).to.have.status(404);
+        });
+    });
 });
