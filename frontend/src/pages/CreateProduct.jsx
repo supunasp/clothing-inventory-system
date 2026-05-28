@@ -189,7 +189,7 @@ const CreateProduct = () => {
                 <div
                     className="mt-7 grid grid-cols-1 items-center gap-4 rounded-xl border border-gray-100 bg-white px-5 py-4 text-xs shadow-sm md:grid-cols-[1fr_1fr_260px]">
                     <p className="font-medium text-gray-900">{successMessage}</p>
-                    <p className="text-gray-500">Product Description</p>
+                    <p className="text-gray-500">{createdProduct?.name}</p>
                     <button
                         type="button"
                         onClick={() => navigate("/inventory/add", {state: {product: createdProduct}})}
