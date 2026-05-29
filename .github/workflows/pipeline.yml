@@ -14,8 +14,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  backend-test:
-    name: Backend tests
+  backend-build:
+    name: Backend build & test
     # Skip the bot's release commit so the version-bump push doesn't recurse.
     if: "github.event_name == 'pull_request' || !contains(github.event.head_commit.message, 'chore(release):')"
     runs-on: ubuntu-latest
@@ -42,7 +42,7 @@ jobs:
           JWT_SECRET: ci-test-secret
 
   frontend-build:
-    name: Frontend build
+    name: Frontend build & test
     if: "github.event_name == 'pull_request' || !contains(github.event.head_commit.message, 'chore(release):')"
     runs-on: ubuntu-latest
 
@@ -61,6 +61,12 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm test -- --watchAll=false --passWithNoTests
+        env:
+          CI: 'true'
+
       - name: Build frontend
         working-directory: frontend
         run: npm run build
@@ -68,8 +74,8 @@ jobs:
           CI: 'false'
 
   release:
-    name: Bump version and tag
-    needs: [backend-test, frontend-build]
+    name: Bump version & tag
+    needs: [backend-build, frontend-build]
     # Release only on direct pushes to main, never on PRs or the release commit itself.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'chore(release):')
     runs-on: ubuntu-latest

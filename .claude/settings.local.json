@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(npx --no-install react-scripts test --watchAll=false --testPathPattern=\"\\(AuthContext|axiosConfig|Login\\).test\")",
+      "Bash(npx --no-install react-scripts test --watchAll=false --testPathPattern=\"\\(ConfirmationModal|Pagination|StockBadge|stockStatus|SessionTimeoutModal\\).test\")",
+      "Bash(npx --no-install react-scripts test --watchAll=false --testPathPattern=\"SessionTimeoutModal.test\")",
+      "Bash(npx --no-install react-scripts test --watchAll=false --testPathPattern=\"\\(AddCategory|AddBrand|CreateProduct|AddInventory\\).test\")",
+      "Bash(npx --no-install react-scripts test --watchAll=false --testPathPattern=\"\\(UserManagement|InventoryAuditList|AdminProductDetails\\).test\")",
+      "Bash(npx --no-install react-scripts test --watchAll=false --testPathPattern=\"UserManagement.test\")",
+      "Bash(npx --no-install react-scripts test --watchAll=false)"
     ]
   }
 }
