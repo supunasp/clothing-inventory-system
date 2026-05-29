@@ -1,6 +1,6 @@
 {
   "name": "clothing-inventory-system",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Complete MERN Clothing Inventory System Application",
   "scripts": {
     "install-all": "npm install && npm install --prefix backend && npm install --prefix frontend",
